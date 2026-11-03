@@ -6,14 +6,14 @@ const IM={};for(const k in SPR){IM[k]=new Image();IM[k].src=SPR[k].src;}
 
 const PI={BG:new Image()};PI.BG.src=ASSETS.scenes.hall_bg;for(const k in ASSETS.props){PI[k]={};for(const t of ['hall','close']){const im=new Image();im.src=ASSETS.props[k][t];PI[k][t]=im;}}
 const STREET=ASSETS.scenes.street;
-function pimg(k){const c=PI[k]&&PI[k].close,h=PI[k]&&PI[k].hall;if(!(c&&c.complete&&c.naturalWidth&&h.complete))return null;return S.view==='hall'?{img:c,width:h.width,height:h.height}:c;}
+function pimg(k){const c=PI[k]&&PI[k].close,h=PI[k]&&PI[k].hall;if(!(c&&c.complete&&c.naturalWidth&&h.complete))return null;return S.view==='hall'?{img:c,width:h.width*ZOOM,height:h.height*ZOOM}:c;}
 function smooth(){ctx.imageSmoothingEnabled=S.view==='hall';ctx.imageSmoothingQuality='high';}
 function drawAt(im,cx,by){smooth();ctx.drawImage(im.img||im,Math.round(cx-im.width/2),Math.round(by-im.height),im.width,im.height);}
 
 const S={mode:'train',state:'start',orient:'land',grid:false,view:'hall',sel:null};
-const HALL={PX:28,DY:14,SK:6,GROUND:332}, CLOSE={PX:72,DY:36,SK:14,GROUND:520};
+const ZOOM=1.125, HALL={PX:28*ZOOM,DY:14*ZOOM,SK:6*ZOOM,GROUND:332}, CLOSE={PX:72,DY:36,SK:14,GROUND:520};
 const HALL_W=31.5, HALL_D=13, WALL_H=3.5, REST=4.5;
-let RES=1,PX,DY,SK,GROUND,cam=0,VW=960,VH=540,boxes=[],scale=1;
+let RES=1,PX,DY,SK,GROUND,HOMECAM=0,cam=0,VW=960,VH=540,boxes=[],scale=1;
 const cv=document.getElementById('c'), ctx=cv.getContext('2d'), fr=document.getElementById('frame');
 function useCfg(c){PX=c.PX;DY=c.DY;SK=c.SK;GROUND=c.GROUND;}
 
@@ -48,7 +48,7 @@ const C={wall:'#d8c7a0',dado:()=>fixed()?'#5f8a63':'#6d8466',ceil:'#3a332c',terr
 
 function drawRoom(){
   ctx.fillStyle=C.ceil;ctx.fillRect(0,0,VW,GROUND+20);
-  if(PI.BG.complete&&PI.BG.naturalWidth){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(PI.BG,-cam,GROUND-300,960,310);
+  if(PI.BG.complete&&PI.BG.naturalWidth){ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(PI.BG,-cam,GROUND-300*ZOOM,960*ZOOM,310*ZOOM);
     if(flag('paint')){ctx.globalAlpha=0.55;boxes.forEach(b=>topF(b.x0+0.25,b.x1-0.25,b.d0+0.15,b.d1-0.15,0,C.court));ctx.globalAlpha=1;}
     return;}
   faceD(0,0,HALL_D,0,WALL_H+1.2,'#c4b48e');faceD(0,0,HALL_D,0,1.2,'#5f7659');
@@ -109,7 +109,7 @@ function person(x,d,H,shirt,pants,hair,dir,sw,key,list,kid){
 function sprite(name,x,d,flip,key,list){
   list.push({k:key,f:()=>{
     const hall=S.view==='hall', id=name+'_close', img=IM[id], dim=IM[name+(hall?'_hall':'_close')]; if(!img||!img.complete||!dim.complete)return;
-    const w=dim.width,h=dim.height,f=P(x,d,0),ax=SPR[id].ax;
+    const zk=hall?ZOOM:1,w=dim.width*zk,h=dim.height*zk,f=P(x,d,0),ax=SPR[id].ax;
     ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(f[0],f[1],PX*0.3,PX*0.07,0,0,7);ctx.fill();
     smooth();ctx.save();
     if(flip){const dx=Math.round(f[0]-(1-ax)*w);ctx.translate(dx+w,f[1]-h);ctx.scale(-1,1);ctx.drawImage(img,0,0,w,h);}
@@ -138,13 +138,25 @@ function person2(x,d,o,dir,sw,key,list){
 const PEOPLE=[['#f2f0e6','#2b3550','#3a2a1e',false],['#3e66a8','#2b3550','#2a1d14',true],['#c45a3a','#3a3a3a','#2a1d14',true],['#d7a63a','#5a4632','#888',false]];
 // ===== 球台上的人：按游戏状态决定谁在打 =====
 // 角色：'kid'(只能在左) 'girl'(只能在左) 'of'老球友(只能在右) 'mom'(只能在右) 或 {blk:[上衣,裤子,头发,是否小孩]}
+const clamp01=v=>Math.max(0,Math.min(1,v));
 function players(b,t,list,span){
   if(b.st!=='ok')return;
   const pair=(typeof tableActors==='function')?tableActors(b):null; if(!pair)return;
   const [L,R]=pair, cx=(b.x0+b.x1)/2, cd=(b.d0+b.d1)/2;
   const slow=L==='girl'||R==='mom', chop=R==='of';
   const per=slow?1.8:1.1, ph=t/per+b.id*0.37, k=Math.floor(ph), u=ph-k, dirR=k%2===0;
-  const xa=cx-(slow?2.05:span), xb=cx+(chop?span+1.2:slow?1.8:span);
+  let xa=cx-(slow?2.05:span), xb=cx+(chop?span+1.2:slow?1.8:span);
+  // 进门动画：时段开始时从左墙大门走到球台
+  const ap=(typeof arriveP==='function')?arriveP(b.id):1;
+  let da=cd-0.05, db=cd+0.05, walking=ap<1;
+  if(walking){const door=[0.6,1.3];const e=t=>t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    const pa=clamp01(e(Math.min(1,ap*1.15))), pb=clamp01(e(Math.max(0,ap*1.15-0.15)));
+    xa=door[0]+(xa-door[0])*pa; da=door[1]+(da-door[1])*pa; xb=door[0]+(xb-door[0])*pb; db=door[1]+(db-door[1])*pb;}
+  if(walking){
+    const wa=Math.sin(t*14)>0?0.03:0;
+    if(L==='kid'||L==='girl')sprite(L==='kid'?'kid_r':'girl0',xa,da,false,da-0.001+wa,list);else person(xa,da,L.blk[3]?1.4:1.7,L.blk[0],L.blk[1],L.blk[2],1,0,da-0.001,list,L.blk[3]);
+    if(R==='of'||R==='mom')sprite(R==='of'?'of_r':'mom0',xb,db,true,db-0.002,list);else person(xb,db,R.blk[3]?1.4:1.7,R.blk[0],R.blk[1],R.blk[2],1,0,db-0.002,list,R.blk[3]);
+    return;}
   // 左边
   if(L==='kid'){let p='kid_r';if(dirR)p=u<0.12?'kid_f2':u<0.35?'kid_f3':'kid_r';else p=u>0.55?'kid_f1':'kid_r';sprite(p,xa-0.1,cd-0.05,false,cd-0.001,list);}
   else if(L==='girl'){sprite(dirR&&u<0.25?'girl1':'girl0',xa,cd-0.05,false,cd-0.001,list);}
@@ -172,9 +184,23 @@ function lamps(b,list){
 }
 function restArea(list){
   const put=(k,x,d)=>list.push({k:d,f:()=>{const im=pimg(k);if(!im)return;const p=P(x,d,0);drawAt(im,p[0],p[1]);}});
+  // 左墙上的大门（靠近镜头）
+  list.push({k:12.9,f:()=>{faceD(0,0.35,2.25,0,2.3,'#4a3626');faceD(0,0.5,2.1,0.05,2.15,'#f3dfb0');faceD(0,0.5,2.1,0.05,0.5,'rgba(120,90,50,.35)');faceD(0,1.27,1.33,0.05,2.15,'#4a3626');}});
+  // 后排走道：沿后墙一排长凳（观众、等台的人坐）
+  [9,18,27].forEach(x=>put('bench',x,12.1));
+  // 饮水机（茶台旁边）
+  list.push({k:5.2,f:()=>{cuboid(3.6,4.1,5.0,5.4,1.25,'#e9eef2','#cfd8de','#aab4ba');cuboid(3.7,4.0,5.1,5.3,1.55,'#8fc3e6','#7ab0d6','#5d93ba');}});
+  // 休息区中间：工夫茶台 + 竹椅（占位，等出图）
+  list.push({k:8.4,f:()=>{cuboid(1.2,1.65,8.3,8.75,0.45,'#c9a45c','#a8843f','#8a6a2f');faceX(1.25,1.6,8.3,0.45,0.85,'#b8923f');}});
+  list.push({k:7.45,f:()=>{cuboid(1.6,2.9,7.1,7.8,0.42,'#7a4a2a','#5e3820','#4a2c18');cuboid(1.75,2.75,7.2,7.7,0.45,'#3a2a1e','#2e2016','#241a12');
+    cuboid(2.0,2.2,7.35,7.5,0.55,'#8a4a2a','#6e3a20','#5a2e1a');[2.35,2.5,2.62].forEach(x=>cuboid(x,x+0.08,7.4,7.48,0.5,'#f4efe2','#ddd6c4','#c8c0ae'));cuboid(1.8,1.95,7.55,7.68,0.68,'#d0d0d0','#aaa','#888');}});
+  list.push({k:6.6,f:()=>{cuboid(2.0,2.45,6.4,6.8,0.4,'#c9a45c','#a8843f','#8a6a2f');}});
+  // 最里面：收银柜台 + 冰柜（原来的位置）；买了器材架就挂在柜台后面的墙上
+  if(flag('gear'))list.push({k:12.6,f:()=>{cuboid(0.4,2.8,12.5,12.7,1.9,'#8a6a48','#6e4e2b','#5a3e22');[[0.55,1.0,'#d84a3a'],[1.1,1.55,'#2a2a2a'],[1.65,2.1,'#d84a3a'],[2.2,2.65,'#2a2a2a']].forEach(([a,b,c])=>faceX(a,b,12.5,1.0,1.7,c));faceX(0.55,2.65,12.5,0.35,0.85,'#e8c86a');}});
   sprite('hero2',1.6,11.7,false,11.7,list);
-  put('counter',1.5,10.6); put('fridge',3.4,11.9); put('bench',2.0,2.8); put('bench',2.0,6.8); put('basket',5.4,1.3);
-  if(flag('net'))put('net',6.4,10.6); if(flag('dehum'))put('dehum',3.9,9.2);
+  put('counter',1.5,10.6); put('fridge',3.4,11.9);
+  put('basket',5.4,1.3);
+  if(flag('net'))put('net',6.4,10.6); if(flag('dehum'))put('dehum',3.9,9.8);
 }
 function label(x,y,txt){ctx.font='11px sans-serif';ctx.textBaseline='top';const tw=ctx.measureText(txt).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x-2,y-1,tw+4,13);ctx.fillStyle='#ffe9b0';ctx.fillText(txt,x,y);}
 function labels(){
@@ -253,11 +279,11 @@ function fit(){
 }
 document.querySelectorAll('#bar button[data-k]').forEach(b=>b.onclick=()=>{
   S[b.dataset.k]=b.dataset.v;document.querySelectorAll(`#bar button[data-k="${b.dataset.k}"]`).forEach(o=>o.classList.toggle('on',o===b));
-  if(b.dataset.k==='mode'){S.view='hall';cam=0;}
+  if(b.dataset.k==='mode'){S.view='hall';cam=HOMECAM;}
   layout();fit();
 });
 document.getElementById('gridBtn').onclick=e=>{S.grid=!S.grid;e.target.classList.toggle('on',S.grid);};
-document.getElementById('back').onclick=()=>{S.view='hall';cam=0;fit();};
+document.getElementById('back').onclick=()=>{S.view='hall';cam=HOMECAM;fit();};
 let drag=null;
 cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,c:cam,moved:false};cv.setPointerCapture(e.pointerId);});
 cv.addEventListener('pointermove',e=>{if(!drag)return;if(Math.abs(e.clientX-drag.x)>5)drag.moved=true;if(S.view==='hall'&&drag.moved){cam=drag.c-(e.clientX-drag.x)/scale;clampCam();}});
@@ -268,6 +294,6 @@ cv.addEventListener('pointerup',e=>{
   drag=null;});
 cv.addEventListener('wheel',e=>{if(S.view==='hall'){cam+=(e.deltaX||e.deltaY);clampCam();}e.preventDefault();},{passive:false});
 addEventListener('resize',fit);
-addEventListener('keydown',e=>{if(e.key==='Escape'){if(S.view!=='hall'){S.view='hall';cam=0;fit();}else closeUI();}});
+addEventListener('keydown',e=>{if(e.key==='Escape'){if(S.view!=='hall'){S.view='hall';cam=HOMECAM;fit();}else closeUI();}});
 
 

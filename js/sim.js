@@ -27,6 +27,7 @@ const FAC=[
   {id:'t3_fix',name:'修好 3 号台',cost:800,show:()=>G.tables[3]==='broken',done:()=>{G.tables[3]='ok';},desc:'台面起翘、网架松了'},
   {id:'net',name:'集球网',cost:600,show:()=>!G.flags.net,done:()=>{G.flags.net=true;},desc:'解锁多球训练'},
   {id:'fridge',name:'柜台加冰柜（卖饮料）',cost:800,show:()=>!G.flags.drinks,done:()=>{G.flags.drinks=true;},desc:'每位客人买汽水 ¥3'},
+  {id:'gear',name:'柜台后挂器材架（卖胶皮、球拍）',cost:1500,show:()=>!G.flags.gear,done:()=>{G.flags.gear=true;},desc:'客人会顺手买胶皮、球拍、球'},
   {id:'ceiling',name:'修吊顶',cost:500,show:()=>!G.flags.ceiling,done:()=>{G.flags.ceiling=true;},desc:'不修会漏水'},
   {id:'dehum',name:'除湿机',cost:1500,show:()=>!G.flags.dehum,done:()=>{G.flags.dehum=true;},desc:'回南天训练不再打折'},
   {id:'paint',name:'地面刷漆',cost:1800,show:()=>!G.flags.paint,done:()=>{G.flags.paint=true;G.rep+=5;},desc:'训练效果 +10%，人气 +5'},
@@ -60,8 +61,10 @@ function newGame(){
     msgs:['老球友：「你爷爷当年的球拍还在柜台抽屉里。」','市乒协：第 4 周周六举办市赛少儿组，周四截止报名。'],
     wishDone:[],cust:{},wk:freshWeek(),lastTip:''};
 }
-function freshWeek(){return {inc:{课程:0,散客:0,饮料:0,奖励:0},out:{设施:0,水电房租:0},gain:{},rep0:null};}
+function freshWeek(){return {inc:{课程:0,散客:0,饮料:0,器材:0,奖励:0},out:{设施:0,水电房租:0},gain:{},rep0:null};}
 let G=load()||newGame();
+let ARRIVE_T0=performance.now();
+function arriveP(id){if(S.view!=='hall')return 1;return clamp((performance.now()-ARRIVE_T0-(id-1)*350)/2600,0,1);}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(G));}catch(e){}}
 function load(){try{const s=localStorage.getItem(SAVE_KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
 
@@ -142,7 +145,8 @@ function endSlot(){
     const want=(0.4+stars()*0.25+(G.slot===2?0.6:0)+(G.tables[n]==='blue'?0.3:0))*(G.weather==='雨'?0.7:1);
     const c=Math.min(2,Math.floor(want+Math.random()));G.cust[n]=c;
     if(c>0){const v=c*10;addInc('散客',v);people+=c;G.rep+=0.08*c;flyAtTable(n,'+'+money(v));}});
-  if(G.flags.drinks){const v=(people+hallStudents.length+(act==='开课'?6:0))*3;if(v>0){addInc('饮料',v);fly(2.6,11,'+'+money(v)+' 汽水','#ffe08a');}}
+  if(G.flags.gear){let v=0;const buyers=Math.floor((people+hallStudents.length)*(0.15+stars()*0.04)+Math.random());for(let i=0;i<buyers;i++)v+=[20,45,60,120][Math.floor(Math.random()*4)];if(v>0){addInc('器材',v);fly(1.5,11,'+'+money(v)+' 器材','#ffd27a');}}
+  if(G.flags.drinks){const v=(people+hallStudents.length+(act==='开课'?6:0))*3;if(v>0){addInc('饮料',v);fly(3.4,11.9,'+'+money(v)+' 汽水','#ffe08a');}}
   // 4 心愿
   checkWishes();
   G.rep=clamp(G.rep,0,100);
@@ -158,6 +162,7 @@ function endSlot(){
   }
   // 下一个时段的散客（让画面先热闹起来）
   previewCustomers();
+  ARRIVE_T0=performance.now();
   save();hud();nav();
   toast(`${doneSlot}：${lines.join('；')||'—'}`);
 }
@@ -241,7 +246,8 @@ const UI={
   else{const f=FAC.find(x=>x.show()&&(x.id==='t3_fix'&&b.id===3||x.id==='clean'+b.id||x.id==='fix'+b.id));
     modal(name+(st==='junk'?'（堆杂物）':'（待修）'),f?`<p>${f.desc}。费用 ${money(f.cost)}</p>${G.queue.includes(f.id)?'<p>已下单，安排一个「修理」时段完工。</p>':`<div class="row"><button ${G.money<f.cost?'disabled':''} onclick="buyFac('${f.id}');UI.tableMenu(boxes.find(x=>x.id===${b.id}))">下单（${f.name}）</button></div>`}`:'<p>—</p>',true);}
  },
- shop(){modal('柜台 · 小卖部',G.flags.drinks?`<p>冰柜里有汽水，每位客人买一瓶 ¥3，自动结算。</p>`:`<p>柜台还是张旧木桌。加个冰柜就能卖汽水。</p><div class="row"><button onclick="openUI('facility')">去设施</button></div>`,true);}
+ tea(){modal('工夫茶台',`<p>一张老茶台，茶盘、紫砂壶、几只小茶杯，旁边一把随手泡。爷爷以前常和老球友坐在这里，一泡茶喝一下午，边喝边看人打球。</p><p class="hint">以后：老球友不打球时会坐在这里；可以「喝茶聊天」加街坊好感、听爷爷的旧事；学员练累了来这里歇脚。</p>`,true);},
+ shop(){modal('柜台 · 小卖部',`<p>${G.flags.drinks?'冰柜里有汽水，每位客人买一瓶 ¥3，自动结算。':'还没开始卖饮料：加个冰柜就能卖汽水。'}</p><p>${G.flags.gear?'后墙挂着器材架，客人会顺手买胶皮、球拍、球。':'柜台后墙可以挂一个器材架，卖胶皮、球拍、球。'}</p>${G.flags.drinks&&G.flags.gear?'':'<div class="row"><button onclick="openUI(\'facility\')">去设施下单</button></div>'}`,true);}
 };
 function confirmReset(){$('resetq').style.display='block';return false;}
 function cycleAct(d,sl){const i=ACTS.indexOf(G.sched[d][sl]);G.sched[d][sl]=ACTS[(i+1)%ACTS.length];UI.schedule();nav();save();}
@@ -268,7 +274,8 @@ function hitAll(mx,my){
   useCfg(HALL);
   for(const b of [...boxes].sort((a,c)=>a.d0-c.d0)){const a=P(b.x0,b.d0,0),c=P(b.x1,b.d1,2);if(mx>=a[0]&&mx<=c[0]&&my<=a[1]&&my>=c[1])return {kind:'table',b};}
   const a=P(0,9.5,0),c=P(REST,12.8,2.2);if(mx>=a[0]&&mx<=c[0]+40&&my<=a[1]&&my>=c[1])return {kind:'shop'};
-  const e=P(0,0,0),f=P(REST,9,1);if(mx>=e[0]&&mx<=f[0]&&my<=e[1]&&my>=f[1])return {kind:'street'};
+  const g1=P(1.0,6.3,0),g2=P(3.2,8.8,1.2);if(mx>=g1[0]&&mx<=g2[0]&&my<=g1[1]&&my>=g2[1])return {kind:'tea'};
+  const e=P(0,0.3,0),f=P(0,2.3,2.4);if(mx>=Math.min(e[0],f[0])-10&&mx<=Math.max(e[0],f[0])+20&&my<=e[1]&&my>=f[1])return {kind:'street'};
   return null;
 }
 
