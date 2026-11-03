@@ -11,7 +11,7 @@ function smooth(){ctx.imageSmoothingEnabled=S.view==='hall';ctx.imageSmoothingQu
 function drawAt(im,cx,by){smooth();ctx.drawImage(im.img||im,Math.round(cx-im.width/2),Math.round(by-im.height),im.width,im.height);}
 
 const S={mode:'train',state:'start',orient:'land',grid:false,view:'hall',sel:null};
-const ZOOM=1.125, HALL={PX:28*ZOOM,DY:14*ZOOM,SK:6*ZOOM,GROUND:332}, CLOSE={PX:72,DY:36,SK:14,GROUND:520};
+const ZOOM=1, HALL={PX:28*ZOOM,DY:14*ZOOM,SK:6*ZOOM,GROUND:332}, CLOSE={PX:72,DY:36,SK:14,GROUND:520};
 const HALL_W=31.5, HALL_D=13, WALL_H=3.5, REST=4.5;
 let RES=1,PX,DY,SK,GROUND,HOMECAM=0,cam=0,VW=960,VH=540,boxes=[],scale=1;
 const cv=document.getElementById('c'), ctx=cv.getContext('2d'), fr=document.getElementById('frame');
