@@ -238,10 +238,10 @@ function clampCam(){if(S.view==='hall')cam=Math.max(0,Math.min(maxCam(),cam));}
 function centerClose(){cam=Math.round(6*CLOSE.PX+3.5*CLOSE.SK-VW/2);}
 function fit(){
   const port=S.orient==='port';
-  VW=port?540:960;VH=port?960:540;cv.style.width=VW+'px';cv.style.height=VH+'px';
+  VW=port?540:960;VH=port?960:404;CLOSE.GROUND=port?520:384;cv.style.width=VW+'px';cv.style.height=VH+'px';
   fr.className=port?'port':'land';fr.style.width=VW+'px';fr.style.height=VH+'px';
   const hall=S.view==='hall';
-  document.getElementById('nav').style.display=hall?'block':'none';document.getElementById('hud').style.display=hall?'flex':'none';if(!hall)closeUI();
+  document.getElementById('nav').style.display=hall?'flex':'none';document.getElementById('side').style.display=hall&&port?'block':'none';document.getElementById('hud').style.display=hall?'flex':'none';if(!hall)closeUI();
   ['score','mctl'].forEach(id=>document.getElementById(id).style.display=hall?'none':'flex');
   document.getElementById('mnote').style.display=!hall&&port?'block':'none';
   const st=document.getElementById('stage');

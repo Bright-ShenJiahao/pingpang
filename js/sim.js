@@ -171,16 +171,21 @@ function msg(t){G.msgs.unshift(t);G.msgs=G.msgs.slice(0,20);}
 function checkWishes(){WISHES.forEach((w,i)=>{if(!G.wishDone.includes(i)&&w.ok()){G.wishDone.push(i);w.reward();msg('完成心愿：'+w.text+(w.rewardText?'（'+w.rewardText+'）':''));fly(2,9,'✔ '+w.text,'#9ff0a0');}});}
 
 // ---------- 界面 ----------
-let TOAST='';
-function toast(t){TOAST=t;const el=$('toastline');if(el){el.textContent=t;el.style.opacity=1;}}
+let toastT=null;
+function toast(t){const el=$('toast');if(!el)return;el.textContent=t;el.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>el.style.opacity=0,4500);}
 function hud(){
   $('hud').innerHTML=`<span>第${G.week}周 · ${DAYS[G.day]} · ${SLOTS[G.slot]}</span><span>${money(G.money)}</span><span>人气 ${'★'.repeat(stars())}${'☆'.repeat(5-stars())}</span><span>${G.weather}</span><span class="nbk" onclick="openUI('notebook')">笔记本${G.msgs.length?'<b>●</b>':''}</span><span class="gear" onclick="openUI('system')">设置</span>`;
 }
 function bar(v,max=20){return `<span class="bar"><i style="width:${clamp(v/max,0,1)*100}%"></i></span>`;}
 function nav(){
   const today=G.sched[G.day];
-  $('nav').innerHTML=`<div class="today"><b>今天</b>${SLOTS.map((s,i)=>`<span class="${i===G.slot?'cur':i<G.slot?'past':''}" onclick="openUI('schedule')">${s}：${today[i]}</span>`).join('')}<em id="toastline" class="toastline" style="opacity:${TOAST?1:0}">${TOAST}</em></div>
-  <div class="btns">${[['日程','schedule'],['学员','students'],['训练','training'],['设施','facility'],['街坊','street'],['赛程','fixtures'],['笔记本','notebook']].map(b=>`<button onclick="openUI('${b[1]}')">${b[0]}${b[1]==='facility'&&G.queue.length?' ('+G.queue.length+')':''}</button>`).join('')}<button class="go" onclick="endSlot()">结束${SLOTS[G.slot]} ▶</button></div>`;
+  $('nav').innerHTML=`<div class="today">${SLOTS.map((s,i)=>`<span class="${i===G.slot?'cur':i<G.slot?'past':''}" onclick="openUI('schedule')">${s[0]}·${today[i]}</span>`).join('')}</div>
+  <div class="btns">${[['日程','schedule'],['学员','students'],['训练','training'],['设施','facility'],['街坊','street'],['赛程','fixtures'],['笔记','notebook']].map(b=>`<button onclick="openUI('${b[1]}')">${b[0]}${b[1]==='facility'&&G.queue.length?'·'+G.queue.length:''}</button>`).join('')}</div><button class="go" onclick="endSlot()">结束${SLOTS[G.slot]} ▶</button>`;
+  side();
+}
+function side(){
+  const el=$('side');if(!el)return;
+  el.innerHTML=G.students.filter(s=>s.joined).map((s,i)=>`<div class="sc" onclick="UI.student(${i})">${s.spr?`<img src="${SPR[s.spr].src}">`:'<div class="ph"></div>'}<div><b>${s.name}</b> <span class="tag">${s.trait}</span><br>${atHall(s)?s.train+(TRAIN[s.train].table?' · '+s.tbl+'号台':''):'上学中'}<br>体力 ${bar(s.hp,100)} 心情 ${bar(s.mood,100)}</div></div>`).join('');
 }
 function modal(title,html,small){$('modal').className='ov'+(small?' small':'');$('modal').style.display='block';$('modal').innerHTML=`<div class="mh"><b>${title}</b><span onclick="closeUI()">关闭 ✕</span></div><div class="mb">${html}</div>`;}
 function closeUI(){$('modal').style.display='none';}

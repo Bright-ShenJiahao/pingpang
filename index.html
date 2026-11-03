@@ -25,16 +25,26 @@
 
   #hud{left:0;top:0;right:0;display:flex;gap:18px;align-items:center;background:rgba(30,24,18,.85);color:#f3e9d8;font-size:13px;padding:5px 10px;pointer-events:auto;border-radius:0}
   #hud .nbk,#hud .gear{cursor:pointer;margin-left:auto}#hud .gear{margin-left:0}#hud .nbk b{color:#e55;margin-left:2px}
-  #nav{background:#efe4cf;color:#3a2e22;padding:10px 12px;box-sizing:border-box;font-size:13px}
-  .land #nav{left:0;top:350px;width:960px;height:190px}.port #nav{left:0;top:350px;width:540px;height:610px}
-  #nav .today{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}#nav .today span{background:#fff8ea;border:1px solid #cdb894;border-radius:6px;padding:4px 8px}#nav .today .cur{background:#c98a4b;color:#2a1a0a}
-  #nav .btns{display:flex;flex-wrap:wrap;gap:8px}
+  #nav{background:linear-gradient(#7a5532,#5e3f24);color:#f3e2c4;padding:8px 10px;box-sizing:border-box;font-size:13px;display:flex;align-items:center;gap:10px;border-top:3px solid #3a2616}
+  .land #nav{left:0;top:350px;width:960px;height:54px}.port #nav{left:0;top:350px;width:540px;height:96px;flex-wrap:wrap;align-content:center}
+  #nav .today{display:flex;gap:4px}#nav .today span{background:#3a2616;border:1px solid #8c6438;border-radius:6px;padding:3px 7px;font-size:12px;cursor:pointer;white-space:nowrap}#nav .today .cur{background:#e8b45c;color:#2a1a0a;border-color:#e8b45c}#nav .today .past{opacity:.45}
+  #nav .btns{display:flex;gap:5px;flex:1}
+  #nav .btns button{padding:7px 9px!important;font-size:13px;background:#e9d5ad!important;color:#3a2616!important;box-shadow:0 2px 0 #3a2616}
+  #nav .go{margin-left:auto;padding:9px 16px!important;font-size:14px!important;font-weight:bold;background:#5f8a63!important;color:#fff!important;box-shadow:0 3px 0 #2f4a33!important;white-space:nowrap}
+  #nav .btns button{white-space:nowrap}
+  .port #nav .btns{order:2;flex:1 1 100%;justify-content:space-between}.port #nav .go{order:1}
+  #toast{left:12px;top:300px;max-width:640px;background:rgba(40,28,16,.88);color:#ffe9b0;padding:6px 12px;border-radius:6px;font-size:13px;transition:opacity .6s;opacity:0;pointer-events:none}
+  .port #toast{top:300px;max-width:500px}
+  #side{display:none;left:0;top:446px;width:540px;bottom:0;background:#efe4cf;padding:10px;box-sizing:border-box;overflow:auto}
+  .port #side{display:block}
+  .sc{display:flex;gap:10px;align-items:center;background:#fff8ea;border:1px solid #cdb894;border-radius:8px;padding:6px 8px;margin-bottom:6px;cursor:pointer;color:#3a2e22;font-size:12px}
+  .sc img,.sc .ph{height:54px;width:auto;image-rendering:pixelated}.sc .ph{width:30px;height:54px}.sc b{font-size:13px}.sc .bar{width:80px}
   #nav button,#modal button{background:#c98a4b;color:#2a1a0a;border:0;border-radius:8px;padding:9px 12px;font-size:13px;cursor:pointer}
   #nav button.go,#modal button.go{background:#5f8a63;color:#fff}
   #modal button.on{background:#5f8a63;color:#fff}#modal button[disabled]{opacity:.45;cursor:default}
   #modal{display:none;background:#f6eedd;color:#3a2e22;border:2px solid #8c6438;border-radius:10px;box-shadow:0 6px 30px rgba(0,0,0,.5);font-size:13px;overflow:auto}
-  .land #modal{left:90px;top:36px;width:780px;height:470px}.port #modal{left:10px;top:360px;width:520px;height:590px}
-  .land #modal.small{left:250px;top:120px;width:460px;height:auto;max-height:380px}.port #modal.small{height:auto;max-height:590px}
+  .land #modal{left:90px;top:30px;width:780px;height:370px}.port #modal{left:10px;top:450px;width:520px;height:500px}
+  .land #modal.small{left:250px;top:60px;width:460px;height:auto;max-height:330px}.port #modal.small{height:auto;max-height:590px}
   #modal .mh{display:flex;justify-content:space-between;padding:10px 14px;background:#e6d6b5;position:sticky;top:0}#modal .mh span{cursor:pointer}
   #modal .mb{padding:10px 14px}#modal h4{margin:12px 0 6px}#modal .hint{color:#7a6650;font-size:12px}
   .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{background:#fff8ea;border:1px solid #cdb894;border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:4px}.slot b{width:100%}.slot.cur{border-color:#c98a4b;border-width:2px}.slot button{padding:5px 8px!important}
@@ -57,7 +67,6 @@
   .port #mctl{left:0;top:560px;width:540px;flex-wrap:wrap;padding:0 16px}
   #mnote{display:none;left:16px;top:680px;width:508px;font-size:13px;line-height:1.7;color:#d9c9a8}
   .toastline{font-style:normal;margin-left:6px;padding:4px 10px;background:#3a2e22;color:#ffe9b0;border-radius:6px;transition:opacity .4s;opacity:0;flex:1;min-width:200px}
-  #nav .today .past{opacity:.5}#nav .today span{cursor:pointer}
   .slot.past{opacity:.5}.wk td{cursor:pointer}
 </style>
 </head>
@@ -79,6 +88,8 @@
     <canvas id="c"></canvas>
     <div id="hud" class="ov"></div>
     <div id="nav" class="ov"></div>
+    <div id="toast" class="ov"></div>
+    <div id="side" class="ov"></div>
     <div id="modal" class="ov"></div>
     <div id="score" class="ov">小学员 A　7 : 5　老球友　· 第2局</div>
     <div id="mctl" class="ov"><div>赛前战术</div><div>局间指挥</div><div>暂停（剩1次）</div><div id="back">◀ 返回球馆</div></div>
