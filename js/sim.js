@@ -1,6 +1,6 @@
 // 「乒乓」· 经营循环（时段结算、训练成长、收支、人气、设施、存档）与界面
 const DAYS=['周一','周二','周三','周四','周五','周六','周日'], SLOTS=['上午','下午','晚上'];
-const ACTS=['开课','带训练','修理','走访','休息'];
+const ACTS=['开课','带训练','亲自动手','走访','休息'];
 const STATS=['发球','接发球','正手','反手','步法','体力','心态','勤奋'];
 const $=id=>document.getElementById(id);
 const money=n=>(n<0?'-¥':'¥')+Math.abs(Math.round(n)).toLocaleString();
@@ -24,17 +24,17 @@ function affinity(s,p){let m=1;if(AFF[s.trait]&&AFF[s.trait][p])m*=AFF[s.trait][
 const affMark=m=>m>=1.25?'◎':m>=1.05?'○':m<=0.85?'△':'';
 // 设施工程：放进施工队列，安排「修理」时段完成
 const FAC=[
-  {id:'t3_fix',name:'修好 3 号台',cost:800,show:()=>G.tables[3]==='broken',done:()=>{G.tables[3]='ok';},desc:'台面起翘、网架松了'},
-  {id:'net',name:'集球网',cost:600,show:()=>!G.flags.net,done:()=>{G.flags.net=true;},desc:'解锁多球训练'},
-  {id:'fridge',name:'柜台加冰柜（卖饮料）',cost:800,show:()=>!G.flags.drinks,done:()=>{G.flags.drinks=true;},desc:'每位客人买汽水 ¥3'},
-  {id:'gear',name:'柜台后挂器材架（卖胶皮、球拍）',cost:1500,show:()=>!G.flags.gear,done:()=>{G.flags.gear=true;},desc:'客人会顺手买胶皮、球拍、球'},
-  {id:'ceiling',name:'修吊顶',cost:500,show:()=>!G.flags.ceiling,done:()=>{G.flags.ceiling=true;},desc:'不修会漏水'},
-  {id:'dehum',name:'除湿机',cost:1500,show:()=>!G.flags.dehum,done:()=>{G.flags.dehum=true;},desc:'回南天训练不再打折'},
-  {id:'paint',name:'地面刷漆',cost:1800,show:()=>!G.flags.paint,done:()=>{G.flags.paint=true;G.rep+=5;},desc:'训练效果 +10%，人气 +5'},
-  {id:'barrier',name:'换新挡板',cost:2000,show:()=>!G.flags.barrier,done:()=>{G.flags.barrier=true;G.rep+=10;},desc:'人气 +10'},
-  ...[1,2,3].map(n=>({id:'blue'+n,name:`${n} 号台换新蓝台`,cost:1500,show:()=>G.tables[n]==='ok',done:()=>{G.tables[n]='blue';},desc:'训练效果 +10%，散客更爱来'})),
-  ...[4,5,6].map(n=>({id:'clean'+n,name:`清理 ${n} 号格杂物`,cost:300,show:()=>G.tables[n]==='junk',done:()=>{G.tables[n]='broken';},desc:'清理后才能修台'})),
-  ...[4,5,6].map(n=>({id:'fix'+n,name:`修好 ${n} 号台`,cost:1000,show:()=>G.tables[n]==='broken',done:()=>{G.tables[n]='ok';},desc:'后排的旧台'}))
+  {id:'t3_fix',hrs:4,name:'修好 3 号台',cost:800,show:()=>G.tables[3]==='broken',done:()=>{G.tables[3]='ok';},desc:'台面起翘、网架松了'},
+  {id:'net',hrs:2,name:'集球网',cost:600,show:()=>!G.flags.net,done:()=>{G.flags.net=true;},desc:'解锁多球训练'},
+  {id:'fridge',hrs:2,name:'柜台加冰柜（卖饮料）',cost:800,show:()=>!G.flags.drinks,done:()=>{G.flags.drinks=true;},desc:'每位客人买汽水 ¥3'},
+  {id:'gear',hrs:2,name:'柜台后挂器材架（卖胶皮、球拍）',cost:1500,show:()=>!G.flags.gear,done:()=>{G.flags.gear=true;},desc:'客人会顺手买胶皮、球拍、球'},
+  {id:'ceiling',hrs:4,name:'修吊顶',cost:500,show:()=>!G.flags.ceiling,done:()=>{G.flags.ceiling=true;},desc:'不修会漏水'},
+  {id:'dehum',hrs:1,name:'除湿机',cost:1500,show:()=>!G.flags.dehum,done:()=>{G.flags.dehum=true;},desc:'回南天训练不再打折'},
+  {id:'paint',hrs:8,name:'地面刷漆',cost:1800,show:()=>!G.flags.paint,done:()=>{G.flags.paint=true;G.rep+=5;},desc:'训练效果 +10%，人气 +5'},
+  {id:'barrier',hrs:6,name:'换新挡板',cost:2000,show:()=>!G.flags.barrier,done:()=>{G.flags.barrier=true;G.rep+=10;},desc:'人气 +10'},
+  ...[1,2,3].map(n=>({id:'blue'+n,hrs:6,name:`${n} 号台换新蓝台`,cost:1500,show:()=>G.tables[n]==='ok',done:()=>{G.tables[n]='blue';},desc:'训练效果 +10%，散客更爱来'})),
+  ...[4,5,6].map(n=>({id:'clean'+n,hrs:2,name:`清理 ${n} 号格杂物`,cost:300,show:()=>G.tables[n]==='junk',done:()=>{G.tables[n]='broken';},desc:'清理后才能修台'})),
+  ...[4,5,6].map(n=>({id:'fix'+n,hrs:6,name:`修好 ${n} 号台`,cost:1000,show:()=>G.tables[n]==='broken',done:()=>{G.tables[n]='ok';},desc:'后排的旧台'}))
 ];
 const NB=[{id:'tang',name:'糖水铺阿姨',give:'饮料供货、八卦情报',spon:'挡板广告 · 糖水会'},
   {id:'shi',name:'士多店老板',give:'球和胶皮进货',spon:'器材进货打折'},
@@ -52,7 +52,7 @@ function newGame(){
   return {week:1,day:0,slot:0,money:5000,rep:5,weather:'回南天',
     tables:{1:'ok',2:'ok',3:'broken',4:'junk',5:'junk',6:'junk'},
     flags:{},queue:[],love:{tang:1,shi:1,old:2},visit:'tang',talked:{},
-    sched:Array.from({length:7},()=>['开课','带训练','修理']),
+    sched:Array.from({length:7},()=>['开课','带训练','休息']),boost:0,cards:{time:0,work:0},
     students:[
       {id:'A',name:'小学员 A',spr:'kid_r_close',actor:'kid',hand:'右手横拍',style:'弧圈快攻',trait:'怕输',talent:1.0,stat:{发球:6,接发球:5,正手:8,反手:6,步法:7,体力:9,心态:4,勤奋:8},hp:90,mood:60,bond:30,train:'对练',tbl:1,joined:true,story:'第一次来球馆时躲在门后看了半小时。'},
       {id:'B',name:'小学员 B',spr:null,blk:['#3e66a8','#2b3550','#2a1d14',true],hand:'右手横拍',style:'快攻',trait:'天赋高但懒',talent:1.4,stat:{发球:9,接发球:8,正手:9,反手:8,步法:5,体力:5,心态:7,勤奋:3},hp:80,mood:70,bond:10,train:'发球接发球',tbl:1,joined:true,story:'（待写）'},
@@ -63,6 +63,7 @@ function newGame(){
 }
 function freshWeek(){return {inc:{课程:0,散客:0,饮料:0,器材:0,奖励:0},out:{设施:0,水电房租:0},gain:{},rep0:null};}
 let G=load()||newGame();
+(function migrate(){G.queue=(G.queue||[]).map(q=>typeof q==='string'?{id:q,left:(FAC.find(f=>f.id===q)||{hrs:4}).hrs}:q);G.sched.forEach(d=>d.forEach((a,i)=>{if(a==='修理')d[i]='亲自动手';}));G.boost=G.boost||0;G.cards=G.cards||{time:0,work:0};})();
 let ARRIVE_T0=performance.now();
 function arriveP(id){if(S.view!=='hall')return 1;return clamp((performance.now()-ARRIVE_T0-(id-1)*350)/2600,0,1);}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(G));}catch(e){}}
@@ -102,70 +103,89 @@ function flyAtTable(id,text,color,dx){const b=boxOf(id);if(b)fly((b.x0+b.x1)/2+(
 // ---------- 时段结算 ----------
 function addInc(k,v){G.money+=v;G.wk.inc[k]=(G.wk.inc[k]||0)+v;}
 function addOut(k,v){G.money-=v;G.wk.out[k]=(G.wk.out[k]||0)+v;}
-function endSlot(){
+// ---------- 时间流动 ----------
+// 1 个时段 = 4 个游戏小时 = 实际 20 秒；每 5 秒结算一次（tick），开菜单自动暂停
+const SLOT_SEC=20, TICKS=4, SLOT_START=[8,13,18];
+let clockT=0, tickIdx=0, PAUSED=false, SLOT_LOG=null;
+const modalOpen=()=>$('modal')&&$('modal').style.display==='block';
+const speed=()=>G.boost>0?2:1;
+function clockStr(){const h=SLOT_START[G.slot]+clockT/SLOT_SEC*4;const hh=Math.floor(h),mm=Math.floor((h-hh)*6)*10;return `${hh}:${String(mm).padStart(2,'0')}`;}
+function update(dt){
+  if(PAUSED||modalOpen()||location.hash.startsWith('#guide'))return;
+  clockT+=Math.min(dt,0.25)*speed();
+  while(tickIdx<TICKS&&clockT>=(tickIdx+1)*SLOT_SEC/TICKS){tick();tickIdx++;}
+  if(clockT>=SLOT_SEC)finishSlot();
+  const c=$('clock');if(c)c.textContent=clockStr();
+}
+function startSlot(){
+  clockT=0;tickIdx=0;SLOT_LOG={inc:0,lines:[]};
   if(G.wk.rep0===null)G.wk.rep0=G.rep;
-  const act=G.sched[G.day][G.slot], lines=[];
-  const coach=act==='带训练';
-  const hallStudents=G.students.filter(atHall);
-  // 1 主角的行动
+  const act=G.sched[G.day][G.slot];
   if(act==='开课'){
-    if(![1,2,3].some(usable)){lines.push('没有能用的台子，课开不了');}
+    if(![1,2,3,4,5,6].some(usable))SLOT_LOG.lines.push('没有能用的台子，课开不了');
     else{const base=[120,180,220][G.slot],name=['老年晨练班','少儿班','成人班'][G.slot],v=Math.round(base*(0.6+stars()*0.2));
-      addInc('课程',v);G.rep+=0.6;lines.push(`${name} 收入 ${money(v)}`);flyAtTable(firstUsable(),'+'+money(v),'#ffe08a',-1);}
-  }else if(act==='修理'){
-    if(G.queue.length){const names=[];G.queue.forEach(id=>{const f=FAC.find(x=>x.id===id);f.done();names.push(f.name);});G.queue=[];layout();
-      lines.push('完工：'+names.join('、'));names.forEach((n,i)=>fly(REST+6+i*3,3,'完工！','#9ff0a0'));}
-    else{G.rep+=0.5;lines.push('打扫了球馆，人气小涨');}
-  }else if(act==='走访'){
-    const n=NB.find(x=>x.id===G.visit);G.love[n.id]=Math.min(5,G.love[n.id]+1);lines.push(`走访${n.name}，好感 ♥${G.love[n.id]}`);
-    if(n.id==='old'&&G.love.old===3)msg('老球友：「以后让孩子们来跟我练削球！」（解锁削球陪练）');
-    if(n.id==='tang'&&G.love.tang===3)msg('糖水铺阿姨：「有什么要帮忙的尽管说。」');
-  }else if(act==='休息'){hallStudents.forEach(s=>s.mood=clamp(s.mood+5,0,100));lines.push('陪大家聊了会天，心情 +5');}
-  // 2 学员训练
+      addInc('课程',v);SLOT_LOG.inc+=v;G.rep+=0.6;SLOT_LOG.lines.push(`${name}开课 +${money(v)}`);flyAtTable(firstUsable(),'学费 +'+money(v),'#ffe08a',-1);}
+  }
+  previewCustomers();
+  ARRIVE_T0=performance.now();
+  hud();nav();
+}
+function tick(){
+  const act=G.sched[G.day][G.slot], coach=act==='带训练', f=1/TICKS;
+  const hallStudents=G.students.filter(atHall);
+  // 学员训练（每 tick 结算 1/4）
   const wet=G.weather==='回南天'&&!G.flags.dehum;
   hallStudents.forEach(s=>{
     let p=s.train; if(TRAIN[p].table&&!usable(s.tbl))p='体能'; if(!trainOK(s,p))p='体能';
     const T=TRAIN[p];
-    if(p==='休息'){s.hp=clamp(s.hp+30,0,100);s.mood=clamp(s.mood+8,0,100);return;}
+    if(p==='休息'){s.hp=clamp(s.hp+30*f,0,100);s.mood=clamp(s.mood+8*f,0,100);return;}
     let m=0.25*affinity(s,p)*s.talent*(0.5+s.stat.勤奋/20);
     if(s.trait==='天赋高但懒'&&!coach)m*=0.6;
-    if(coach){m*=1.4;s.bond=clamp(s.bond+1,0,100);}
+    if(coach)m*=1.4;
     if(s.hp<25)m*=0.5; if(s.mood<30)m*=0.7;
     if(wet)m*=0.7; if(G.flags.paint)m*=1.1; if(G.tables[s.tbl]==='blue'&&T.table)m*=1.1;
     const ups=[];
-    for(const [k,w] of Object.entries(T.gain)){const before=Math.floor(s.stat[k]);s.stat[k]=Math.min(20,s.stat[k]+w*m*(0.8+Math.random()*0.4));
+    for(const [k,w] of Object.entries(T.gain)){const before=Math.floor(s.stat[k]);s.stat[k]=Math.min(20,s.stat[k]+w*m*f*(0.8+Math.random()*0.4));
       const d=Math.floor(s.stat[k])-before;if(d>0){ups.push(k+' +'+d);G.wk.gain[s.name]=G.wk.gain[s.name]||{};G.wk.gain[s.name][k]=(G.wk.gain[s.name][k]||0)+d;}}
-    s.hp=clamp(s.hp+T.hp,0,100);s.mood=clamp(s.mood-2,0,100);
+    s.hp=clamp(s.hp+T.hp*f,0,100);s.mood=clamp(s.mood-2*f,0,100);
     ups.forEach((u,i)=>{if(T.table)flyAtTable(s.tbl,`${s.name.replace('小学员 ','')} ${u}`,'#a8e0ff',(i-0.5)*1.2);else fly(REST+2,5+i,`${s.name.replace('小学员 ','')} ${u}`,'#a8e0ff');});
   });
-  // 3 散客 + 饮料
-  const busy=new Set(hallStudents.filter(s=>TRAIN[s.train].table).map(s=>s.tbl));
-  let people=0;G.cust={};
-  [1,2,3,4,5,6].forEach(n=>{if(!usable(n)||busy.has(n))return;
-    const want=(0.4+stars()*0.25+(G.slot===2?0.6:0)+(G.tables[n]==='blue'?0.3:0))*(G.weather==='雨'?0.7:1);
-    const c=Math.min(2,Math.floor(want+Math.random()));G.cust[n]=c;
-    if(c>0){const v=c*10;addInc('散客',v);people+=c;G.rep+=0.08*c;flyAtTable(n,'+'+money(v));}});
-  if(G.flags.gear){let v=0;const buyers=Math.floor((people+hallStudents.length)*(0.15+stars()*0.04)+Math.random());for(let i=0;i<buyers;i++)v+=[20,45,60,120][Math.floor(Math.random()*4)];if(v>0){addInc('器材',v);fly(1.5,11,'+'+money(v)+' 器材','#ffd27a');}}
-  if(G.flags.drinks){const v=(people+hallStudents.length+(act==='开课'?6:0))*3;if(v>0){addInc('饮料',v);fly(3.4,11.9,'+'+money(v)+' 汽水','#ffe08a');}}
-  // 4 心愿
-  checkWishes();
-  G.rep=clamp(G.rep,0,100);
-  // 5 时间推进
-  const doneSlot=`${DAYS[G.day]}${SLOTS[G.slot]}`;
+  // 散客：打完一局付钱
+  let people=0;
+  Object.entries(G.cust).forEach(([n,c])=>{if(c>0&&Math.random()<0.75){const v=c*10;addInc('散客',v);SLOT_LOG.inc+=v;people+=c;G.rep+=0.03*c;flyAtTable(+n,'+'+money(v));}});
+  if(G.flags.gear&&Math.random()<0.18+stars()*0.04){const v=[20,45,60,120][Math.floor(Math.random()*4)];addInc('器材',v);SLOT_LOG.inc+=v;fly(1.5,11,'器材 +'+money(v),'#ffd27a');}
+  if(G.flags.drinks){const v=(people+Math.ceil(hallStudents.length/2)+(act==='开课'?2:0))*3;if(v>0){addInc('饮料',v);SLOT_LOG.inc+=v;fly(3.4,11.9,'汽水 +'+money(v),'#ffe08a');}}
+  // 施工：每 tick = 1 个游戏小时；主角「亲自动手」时翻倍
+  if(G.queue.length){const q=G.queue[0];q.left-=act==='亲自动手'?2:1;if(q.left<=0)completeWork(q.id);}
+  checkWishes();G.rep=clamp(G.rep,0,100);
+  hud();
+}
+function completeWork(id){const f=FAC.find(x=>x.id===id);G.queue=G.queue.filter(q=>q.id!==id);f.done();layout();
+  const t=workTable(id);if(t)flyAtTable(t,'完工！','#9ff0a0');else fly(2.5,9,'完工：'+f.name,'#9ff0a0');
+  SLOT_LOG&&SLOT_LOG.lines.push('完工：'+f.name);msg('完工：'+f.name);nav();}
+function workTable(id){const m=id.match(/(\d)$/);return id==='t3_fix'?3:m&&/^(blue|clean|fix)/.test(id)?+m[1]:0;}
+function finishSlot(){
+  const act=G.sched[G.day][G.slot], hallStudents=G.students.filter(atHall);
+  if(act==='带训练')hallStudents.forEach(s=>s.bond=clamp(s.bond+1,0,100));
+  if(act==='走访'){const n=NB.find(x=>x.id===G.visit);G.love[n.id]=Math.min(5,G.love[n.id]+1);SLOT_LOG.lines.push(`走访${n.name}，好感 ♥${G.love[n.id]}`);
+    if(n.id==='old'&&G.love.old===3)msg('老球友：「以后让孩子们来跟我练削球！」（解锁削球陪练）');
+    if(n.id==='tang'&&G.love.tang===3)msg('糖水铺阿姨：「有什么要帮忙的尽管说。」');}
+  if(act==='休息'){hallStudents.forEach(s=>s.mood=clamp(s.mood+5,0,100));SLOT_LOG.lines.push('陪大家喝茶聊天，心情 +5');}
+  const done=`${DAYS[G.day]}${SLOTS[G.slot]}`, log=SLOT_LOG;
   G.slot++;
   if(G.slot>2){G.slot=0;
     G.students.forEach(s=>{s.hp=clamp(s.hp+25,0,100);s.mood=clamp(s.mood+(60-s.mood)*0.2,0,100);});
     G.talked={};
+    if(G.boost>0)G.boost--;
     if(G.day===6){addOut('水电房租',900);const wk=G.wk;showWeek(wk);G.wk=freshWeek();G.week++;G.day=0;}
     else G.day++;
     rollWeather();
   }
-  // 下一个时段的散客（让画面先热闹起来）
-  previewCustomers();
-  ARRIVE_T0=performance.now();
-  save();hud();nav();
-  toast(`${doneSlot}：${lines.join('；')||'—'}`);
+  save();startSlot();
+  toast(`${done}：${log.inc?'收入 '+money(log.inc):''}${log.lines.length?(log.inc?'；':'')+log.lines.join('；'):''}`||done+'结束');
 }
+// 测试用：跳过当前时段
+function skipSlot(){while(tickIdx<TICKS){tick();tickIdx++;}finishSlot();}
 function firstUsable(){return [1,2,3,4,5,6].find(usable)||1;}
 function rollWeather(){const r=Math.random();G.weather=r<0.55?'晴':r<0.7?'阴':r<0.85?'雨':'回南天';if(G.weather==='回南天'&&!G.flags.dehum)msg('又是回南天，地板湿滑，今天训练效果打七折。');}
 function previewCustomers(){
@@ -183,9 +203,11 @@ function hud(){
 }
 function bar(v,max=20){return `<span class="bar"><i style="width:${clamp(v/max,0,1)*100}%"></i></span>`;}
 function nav(){
-  const today=G.sched[G.day];
+  const today=G.sched[G.day], dbg=new URLSearchParams(location.search).has('debug');
   $('nav').innerHTML=`<div class="today">${SLOTS.map((s,i)=>`<span class="${i===G.slot?'cur':i<G.slot?'past':''}" onclick="openUI('schedule')">${s[0]}·${today[i]}</span>`).join('')}</div>
-  <div class="btns">${[['日程','schedule'],['学员','students'],['训练','training'],['设施','facility'],['街坊','street'],['赛程','fixtures'],['笔记','notebook']].map(b=>`<button onclick="openUI('${b[1]}')">${b[0]}${b[1]==='facility'&&G.queue.length?'·'+G.queue.length:''}</button>`).join('')}</div><button class="go" onclick="endSlot()">结束${SLOTS[G.slot]} ▶</button>`;
+  <div class="btns">${[['日程','schedule'],['学员','students'],['训练','training'],['设施','facility'],['街坊','street'],['赛程','fixtures'],['笔记','notebook']].map(b=>`<button onclick="openUI('${b[1]}')">${b[0]}${b[1]==='facility'&&G.queue.length?'·'+G.queue.length:''}</button>`).join('')}</div>
+  ${dbg?'<button class="dbg" onclick="skipSlot()">跳过时段</button>':''}
+  <div class="clockbox"><span id="clock">${clockStr()}</span>${G.boost>0?'<b class="boost">×2</b>':''}<button class="go" onclick="PAUSED=!PAUSED;nav()">${PAUSED?'▶ 继续':'❚❚ 暂停'}</button></div>`;
   side();
 }
 function side(){
@@ -199,7 +221,7 @@ const UI={
   const today=G.sched[G.day];
   modal('日程安排',`<h4>今天（${DAYS[G.day]}）</h4><div class="slots">${SLOTS.map((s,i)=>`<div class="slot ${i===G.slot?'cur':''} ${i<G.slot?'past':''}"><b>${s}${i<G.slot?'（已过）':''}</b>${ACTS.map(a=>`<button class="${today[i]===a?'on':''}" ${i<G.slot?'disabled':''} onclick="G.sched[${G.day}][${i}]='${a}';UI.schedule();nav();save()">${a}</button>`).join('')}</div>`).join('')}</div>
   <h4>本周</h4><table class="wk"><tr><th></th>${DAYS.map((d,i)=>`<th class="${i===G.day?'cur':''}">${d}</th>`).join('')}</tr>${SLOTS.map((s,j)=>`<tr><th>${s}</th>${DAYS.map((d,i)=>`<td class="${i===G.day&&j===G.slot?'cur':''}" onclick="${i>G.day||(i===G.day&&j>=G.slot)?`cycleAct(${i},${j})`:''}">${G.sched[i][j]}</td>`).join('')}</tr>`).join('')}</table>
-  <p class="hint">点本周表格的格子可以切换安排。开课：上午老年晨练班、下午少儿班、晚上成人班，收学费、涨人气 · 带训练：本时段训练效果 ×1.4，懒孩子不偷懒 · 修理：完成施工队列里的工程（没有工程就打扫，人气 +1） · 走访：去找街坊，好感 +1 · 休息：陪大家聊天，心情 +5。工作日上午孩子们在上学。</p>`);
+  <p class="hint">点本周表格的格子可以切换安排。开课：上午老年晨练班、下午少儿班、晚上成人班，收学费、涨人气 · 带训练：本时段训练效果 ×1.4，懒孩子不偷懒 · 亲自动手：自己上去帮工人干活，施工速度翻倍 · 走访：去找街坊，好感 +1 · 休息：陪大家聊天，心情 +5。工作日上午孩子们在上学。</p>`);
  },
  students(){
   modal('学员名册',`<div class="cards">${G.students.filter(s=>s.joined).map((s,i)=>`<div class="scard" onclick="UI.student(${i})">${s.spr?`<img src="${SPR[s.spr].src}">`:'<div class="ph">待出图</div>'}<b>${s.name}</b><small>${s.hand} · ${s.style}</small><span class="tag">${s.trait}</span><small>体力 ${bar(s.hp,100)}</small><small>心情 ${bar(s.mood,100)}</small><small>现在：${atHall(s)?s.train+(TRAIN[s.train].table?' · '+s.tbl+'号台':''):'上学中'}</small></div>`).join('')}</div>`);
@@ -221,10 +243,9 @@ const UI={
   <p class="hint">一张台最多两人。只有一个人时，老球友或妈妈会陪练。多球需要集球网；削球陪练要老球友好感 ♥3。体力低于 25 时效果减半。</p>`);
  },
  facility(){
-  const q=G.queue.map(id=>FAC.find(f=>f.id===id));
-  modal('设施与修理',`${q.length?`<h4>施工队列（安排一个「修理」时段完成）</h4>${q.map(f=>`<div class="ln"><span>${f.name}</span><em>施工中</em></div>`).join('')}`:''}
-  <h4>可以做的工程</h4><table class="tr"><tr><th>工程</th><th>效果</th><th>费用</th><th></th></tr>${FAC.filter(f=>f.show()&&!G.queue.includes(f.id)).map(f=>`<tr><td>${f.name}</td><td>${f.desc}</td><td>${money(f.cost)}</td><td><button ${G.money<f.cost?'disabled':''} onclick="buyFac('${f.id}')">${G.money<f.cost?'钱不够':'下单'}</button></td></tr>`).join('')}</table>
-  <p class="hint">下单时付钱，排进施工队列；把日程里某个时段安排成「修理」，那个时段结束时完工。</p>`);
+    modal('设施与修理',`${G.queue.length?`<h4>施工中（按顺序一个一个做）</h4>${G.queue.map((q,i)=>{const f=FAC.find(x=>x.id===q.id);return `<div class="ln"><span>${f.name}</span><em>${i?'排队中':'还要约 '+Math.max(1,Math.ceil(q.left))+' 小时'}</em></div>`;}).join('')}${G.cards.work?`<div class="row"><button onclick="useCard('work')">用施工加速卡（剩 ${G.cards.work} 张）</button></div>`:''}`:''}
+  <h4>可以做的工程</h4><table class="tr"><tr><th>工程</th><th>效果</th><th>工期</th><th>费用</th><th></th></tr>${FAC.filter(f=>f.show()&&!G.queue.some(q=>q.id===f.id)).map(f=>`<tr><td>${f.name}</td><td>${f.desc}</td><td>${f.hrs} 小时</td><td>${money(f.cost)}</td><td><button ${G.money<f.cost?'disabled':''} onclick="buyFac('${f.id}')">${G.money<f.cost?'钱不够':'下单'}</button></td></tr>`).join('')}</table>
+  <p class="hint">下单时付钱，工人马上开工，到时间自动完工。日程里安排「亲自动手」，施工速度翻倍。急的话可以在柜台买施工加速卡。</p>`);
  },
  street(){
   modal('街坊 · 骑楼老街',`<div class="street"><img src="${STREET}"><div class="nbs">${NB.map(n=>`<div class="nb"><b>${n.name}</b><span class="love">${'♥'.repeat(G.love[n.id])}${'♡'.repeat(5-G.love[n.id])}</span><small>能提供：${n.give}</small><small>${n.spon}</small><div class="row"><button class="${G.visit===n.id?'on':''}" onclick="G.visit='${n.id}';UI.street();save()">${G.visit===n.id?'✔ 下次走访找他':'下次走访找他'}</button></div></div>`).join('')}</div></div><p class="hint">在日程里安排「走访」，那个时段就会去找你选的人，好感 +1。</p>`);
@@ -238,16 +259,16 @@ const UI={
   const body=tab==='wish'?WISHES.map((w,i)=>`<label class="chk"><input type="checkbox" ${G.wishDone.includes(i)?'checked':''} disabled> ${w.text}${w.rewardText?` <small>（${w.rewardText}）</small>`:''}</label>`).join(''):tab==='msg'?`<ul>${G.msgs.map(m=>`<li>${m}</li>`).join('')}</ul>`:`<ul>${TIPS.map(m=>`<li>${m}</li>`).join('')}</ul>`;
   modal('爷爷的笔记本',`<img src="${SPR.grandpa2_close.src}" style="float:right;image-rendering:pixelated;height:110px"><div class="tabs">${Object.entries(T).map(([k,v])=>`<button class="${k===tab?'on':''}" onclick="UI.notebook('${k}')">${v}</button>`).join('')}</div><div class="paper">${body}</div>`);
  },
- system(){modal('设置',`<div class="row"><button onclick="save();toast('已存档')">存档</button><button onclick="if(confirmReset()){}">重新开始</button></div><p class="hint">每个时段结束会自动存档（存在这台设备的浏览器里）。</p><p id="resetq" class="react" style="display:none">确定要清空存档、从头开始吗？<button onclick="localStorage.removeItem(SAVE_KEY);G=newGame();layout();hud();nav();closeUI();toast('已重新开始')">确定</button></p>`,true);},
+ system(){modal('设置',`<div class="row"><button onclick="save();toast('已存档')">存档</button><button onclick="if(confirmReset()){}">重新开始</button></div><p class="hint">每个时段结束会自动存档（存在这台设备的浏览器里）。</p><p id="resetq" class="react" style="display:none">确定要清空存档、从头开始吗？<button onclick="localStorage.removeItem(SAVE_KEY);G=newGame();layout();startSlot();closeUI();toast('已重新开始')">确定</button></p>`,true);},
  tableMenu(b){
   const name=b.id+'号台', st=G.tables[b.id];
   if(usable(b.id)){const who=G.students.filter(s=>atHall(s)&&s.tbl===b.id&&TRAIN[s.train].table&&s.train!=='休息');
     modal(name+(st==='blue'?'（蓝台）':''),`<p>${SLOTS[G.slot]}：${who.length?who.map(s=>s.name+'（'+s.train+'）').join('、'):(G.cust[b.id]?'散客在打球':'空着')}</p><div class="row"><button onclick="closeUI();S.sel=boxes.find(x=>x.id===${b.id});S.view='close';fit()">观看</button><button onclick="UI.training()">安排训练</button></div>`,true);}
   else{const f=FAC.find(x=>x.show()&&(x.id==='t3_fix'&&b.id===3||x.id==='clean'+b.id||x.id==='fix'+b.id));
-    modal(name+(st==='junk'?'（堆杂物）':'（待修）'),f?`<p>${f.desc}。费用 ${money(f.cost)}</p>${G.queue.includes(f.id)?'<p>已下单，安排一个「修理」时段完工。</p>':`<div class="row"><button ${G.money<f.cost?'disabled':''} onclick="buyFac('${f.id}');UI.tableMenu(boxes.find(x=>x.id===${b.id}))">下单（${f.name}）</button></div>`}`:'<p>—</p>',true);}
+    modal(name+(st==='junk'?'（堆杂物）':'（待修）'),f?`<p>${f.desc}。费用 ${money(f.cost)}</p>${G.queue.some(q=>q.id===f.id)?'<p>施工中……</p>':`<div class="row"><button ${G.money<f.cost?'disabled':''} onclick="buyFac('${f.id}');UI.tableMenu(boxes.find(x=>x.id===${b.id}))">下单（${f.name}）</button></div>`}`:'<p>—</p>',true);}
  },
  tea(){modal('工夫茶台',`<p>一张老茶台，茶盘、紫砂壶、几只小茶杯，旁边一把随手泡。爷爷以前常和老球友坐在这里，一泡茶喝一下午，边喝边看人打球。</p><p class="hint">以后：老球友不打球时会坐在这里；可以「喝茶聊天」加街坊好感、听爷爷的旧事；学员练累了来这里歇脚。</p>`,true);},
- shop(){modal('柜台 · 小卖部',`<p>${G.flags.drinks?'冰柜里有汽水，每位客人买一瓶 ¥3，自动结算。':'还没开始卖饮料：加个冰柜就能卖汽水。'}</p><p>${G.flags.gear?'后墙挂着器材架，客人会顺手买胶皮、球拍、球。':'柜台后墙可以挂一个器材架，卖胶皮、球拍、球。'}</p>${G.flags.drinks&&G.flags.gear?'':'<div class="row"><button onclick="openUI(\'facility\')">去设施下单</button></div>'}`,true);}
+shop(){modal('柜台 · 小卖部',`<h4>加速卡</h4><div class="ln"><span>时间加速卡：今天剩下的时间 2 倍速</span><em>${money(300)} <button ${G.money<300?'disabled':''} onclick="buyCard('time',300)">买</button> 有 ${G.cards.time} 张 ${G.cards.time?'<button onclick="useCard(\'time\')">用</button>':''}</em></div><div class="ln"><span>施工加速卡：正在施工的工程立刻完工</span><em>${money(200)} <button ${G.money<200?'disabled':''} onclick="buyCard('work',200)">买</button> 有 ${G.cards.work} 张 ${G.cards.work?'<button onclick="useCard(\'work\')">用</button>':''}</em></div><h4>小卖部</h4><p>${G.flags.drinks?'冰柜里有汽水，每位客人买一瓶 ¥3，自动结算。':'还没开始卖饮料：加个冰柜就能卖汽水。'}</p><p>${G.flags.gear?'后墙挂着器材架，客人会顺手买胶皮、球拍、球。':'柜台后墙可以挂一个器材架，卖胶皮、球拍、球。'}</p>${G.flags.drinks&&G.flags.gear?'':'<div class="row"><button onclick="openUI(\'facility\')">去设施下单</button></div>'}`,true);}
 };
 function confirmReset(){$('resetq').style.display='block';return false;}
 function cycleAct(d,sl){const i=ACTS.indexOf(G.sched[d][sl]);G.sched[d][sl]=ACTS[(i+1)%ACTS.length];UI.schedule();nav();save();}
@@ -261,7 +282,9 @@ function showWeek(wk){
   <div class="row"><button class="go" onclick="closeUI()">进入第${G.week}周 ▶</button></div>`),50);
 }
 function openUI(k){UI[k]();}
-function buyFac(id){const f=FAC.find(x=>x.id===id);if(G.money<f.cost)return;addOut('设施',f.cost);G.queue.push(id);save();hud();nav();if($('modal').style.display==='block'&&$('modal').textContent.includes('设施与修理'))UI.facility();toast(`已下单：${f.name}。安排一个「修理」时段完工`);}
+function buyFac(id){const f=FAC.find(x=>x.id===id);if(G.money<f.cost||G.queue.some(q=>q.id===id))return;addOut('设施',f.cost);G.queue.push({id,left:f.hrs});save();hud();nav();if(modalOpen()&&$('modal').textContent.includes('设施与修理'))UI.facility();toast(`已下单：${f.name}，工人开工了（约 ${f.hrs} 小时）`);}
+function useCard(k){if(!G.cards[k])return;if(k==='work'){if(!G.queue.length){toast('现在没有在施工的工程');return;}G.cards.work--;completeWork(G.queue[0].id);}else{G.cards.time--;G.boost+=1;toast('时间加速卡：今天剩下的时间 2 倍速');}save();hud();nav();if(modalOpen())closeUI();}
+function buyCard(k,p){if(G.money<p)return;addOut('设施',p);G.cards[k]++;save();hud();UI.shop();}
 function doTalk(i,k){const s=G.students[i];if(G.talked[s.id])return;G.talked[s.id]=1;
   const R={怕输:{鼓励:['他点点头，握拍的手松了一点。',{心态:.6}],施压:['他低下头，半天没说话。',{心态:-.8}],冷静:['他深呼吸了几次。',{心态:1}]},
     天赋高但懒:{鼓励:['「知道啦知道啦。」好像更放松了……',{勤奋:-.4}],施压:['「切，谁怕谁。」',{勤奋:1}],冷静:['他打了个哈欠。',{}]},
@@ -279,5 +302,5 @@ function hitAll(mx,my){
   return null;
 }
 
-layout();previewCustomers();hud();nav();fit();
+layout();hud();startSlot();fit();
 if(!location.hash.startsWith('#guide'))requestAnimationFrame(loop);

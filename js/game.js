@@ -250,8 +250,9 @@ function drawClose(t){
     for(let m=-4;m<=16;m++){const x=Math.round(m*PX-cam);if(x<-20||x>VW+20)continue;ctx.fillStyle='#ffe9b0';ctx.fillRect(x,y,1,8);ctx.fillText(m+'m',x+2,y+2);}
     const q=P(b.x0+0.2,b.d1-0.3,0);label(q[0],q[1]-12,'比赛场 12×6m（市赛级别）');}
 }
+let LAST_TS=0;
 function loop(ts){
-  const t=ts/1000;ctx.setTransform(RES,0,0,RES,0,0);
+  const t=ts/1000,dt=LAST_TS?(ts-LAST_TS)/1000:0;LAST_TS=ts;if(typeof update==='function')update(dt);ctx.setTransform(RES,0,0,RES,0,0);
   if(S.view==='hall')drawHall(t);else drawClose(t);
   requestAnimationFrame(loop);
 }

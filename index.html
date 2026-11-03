@@ -30,11 +30,14 @@
   #nav .today{display:flex;gap:4px}#nav .today span{background:#3a2616;border:1px solid #8c6438;border-radius:6px;padding:3px 7px;font-size:12px;cursor:pointer;white-space:nowrap}#nav .today .cur{background:#e8b45c;color:#2a1a0a;border-color:#e8b45c}#nav .today .past{opacity:.45}
   #nav .btns{display:flex;gap:5px;flex:1}
   #nav .btns button{padding:7px 9px!important;font-size:13px;background:#e9d5ad!important;color:#3a2616!important;box-shadow:0 2px 0 #3a2616}
-  #nav .go{margin-left:auto;padding:9px 16px!important;font-size:14px!important;font-weight:bold;background:#5f8a63!important;color:#fff!important;box-shadow:0 3px 0 #2f4a33!important;white-space:nowrap}
+  #nav .go{padding:9px 16px!important;font-size:14px!important;font-weight:bold;background:#5f8a63!important;color:#fff!important;box-shadow:0 3px 0 #2f4a33!important;white-space:nowrap}
   #nav .btns button{white-space:nowrap}
   .port #nav .btns{order:2;flex:1 1 100%;justify-content:space-between}.port #nav .go{order:1}
-  #toast{left:12px;top:300px;max-width:640px;background:rgba(40,28,16,.88);color:#ffe9b0;padding:6px 12px;border-radius:6px;font-size:13px;transition:opacity .6s;opacity:0;pointer-events:none}
-  .port #toast{top:300px;max-width:500px}
+  .clockbox{display:flex;align-items:center;gap:8px;margin-left:auto}#clock{font:bold 18px monospace;color:#ffe9b0;background:#3a2616;padding:4px 10px;border-radius:6px;min-width:60px;text-align:center}.boost{color:#ffd27a}
+  #nav .dbg{background:#555!important;color:#fff!important;padding:7px 9px;border:0;border-radius:8px;font-size:12px}
+  .port #nav .clockbox{order:1}
+  #toast{left:50%;transform:translateX(-50%);top:46px;max-width:640px;background:rgba(40,28,16,.88);color:#ffe9b0;padding:6px 12px;border-radius:6px;font-size:13px;transition:opacity .6s;opacity:0;pointer-events:none}
+  .port #toast{top:46px;max-width:500px}
   #side{display:none;left:0;top:446px;width:540px;bottom:0;background:#efe4cf;padding:10px;box-sizing:border-box;overflow:auto}
   .port #side{display:block}
   .sc{display:flex;gap:10px;align-items:center;background:#fff8ea;border:1px solid #cdb894;border-radius:8px;padding:6px 8px;margin-bottom:6px;cursor:pointer;color:#3a2e22;font-size:12px}
