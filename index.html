@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>乒乓 · 球馆比例原型</title>
+<style>
+  html,body{margin:0;height:100%;background:#1d1a17;color:#eee;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;overflow:hidden}
+  #bar{display:flex;flex-wrap:wrap;gap:6px;padding:8px;align-items:center;background:#2a2622}
+  #bar button{background:#3d3731;color:#f3e9d8;border:1px solid #5a5148;border-radius:6px;padding:6px 10px;font-size:13px;cursor:pointer}
+  #bar button.on{background:#c98a4b;color:#2a1a0a;border-color:#e0a46a}
+  #bar .sep{width:1px;height:22px;background:#5a5148;margin:0 4px}
+  #stage{position:relative;width:100%;height:100%;overflow:hidden}
+  body.debug #stage{height:calc(100% - 46px)}
+  #frame{position:absolute;left:0;top:0;transform-origin:0 0;background:#000;box-shadow:0 0 0 2px #5a5148;overflow:hidden}
+  canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:pointer}
+  .ov{position:absolute;box-sizing:border-box}
+  #panel{background:#efe4cf;color:#3a2e22;padding:12px 14px;font-size:14px}
+  #panel h3{margin:0 0 6px;font-size:16px}
+  .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+  .acts div{background:#c98a4b;color:#2a1a0a;text-align:center;padding:10px 0;border-radius:8px;cursor:pointer}
+  .cards{display:flex;gap:8px}
+  .card{flex:1;background:#fff8ea;border:1px solid #cdb894;border-radius:8px;padding:6px 8px;font-size:12px;line-height:1.55}
+  .legend{margin-top:8px;font-size:12px;line-height:1.6;color:#6a5844}
+
+  #hud{left:0;top:0;right:0;display:flex;gap:18px;align-items:center;background:rgba(30,24,18,.85);color:#f3e9d8;font-size:13px;padding:5px 10px;pointer-events:auto;border-radius:0}
+  #hud .nbk,#hud .gear{cursor:pointer;margin-left:auto}#hud .gear{margin-left:0}#hud .nbk b{color:#e55;margin-left:2px}
+  #nav{background:#efe4cf;color:#3a2e22;padding:10px 12px;box-sizing:border-box;font-size:13px}
+  .land #nav{left:0;top:350px;width:960px;height:190px}.port #nav{left:0;top:350px;width:540px;height:610px}
+  #nav .today{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}#nav .today span{background:#fff8ea;border:1px solid #cdb894;border-radius:6px;padding:4px 8px}#nav .today .cur{background:#c98a4b;color:#2a1a0a}
+  #nav .btns{display:flex;flex-wrap:wrap;gap:8px}
+  #nav button,#modal button{background:#c98a4b;color:#2a1a0a;border:0;border-radius:8px;padding:9px 12px;font-size:13px;cursor:pointer}
+  #nav button.go,#modal button.go{background:#5f8a63;color:#fff}
+  #modal button.on{background:#5f8a63;color:#fff}#modal button[disabled]{opacity:.45;cursor:default}
+  #modal{display:none;background:#f6eedd;color:#3a2e22;border:2px solid #8c6438;border-radius:10px;box-shadow:0 6px 30px rgba(0,0,0,.5);font-size:13px;overflow:auto}
+  .land #modal{left:90px;top:36px;width:780px;height:470px}.port #modal{left:10px;top:360px;width:520px;height:590px}
+  .land #modal.small{left:250px;top:120px;width:460px;height:auto;max-height:380px}.port #modal.small{height:auto;max-height:590px}
+  #modal .mh{display:flex;justify-content:space-between;padding:10px 14px;background:#e6d6b5;position:sticky;top:0}#modal .mh span{cursor:pointer}
+  #modal .mb{padding:10px 14px}#modal h4{margin:12px 0 6px}#modal .hint{color:#7a6650;font-size:12px}
+  .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.slot{background:#fff8ea;border:1px solid #cdb894;border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:4px}.slot b{width:100%}.slot.cur{border-color:#c98a4b;border-width:2px}.slot button{padding:5px 8px!important}
+  table.wk,table.tr{border-collapse:collapse;width:100%}.wk th,.wk td,.tr th,.tr td{border:1px solid #d8c7a0;padding:4px 6px;text-align:center;font-size:12px}.wk .cur{background:#c98a4b;color:#2a1a0a}.tr td button{padding:4px 7px!important;margin:1px}
+  .cards{display:flex;gap:10px;flex-wrap:wrap}.scard{flex:1;min-width:140px;background:#fff8ea;border:1px solid #cdb894;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:4px;cursor:pointer;align-items:flex-start}
+  .scard img,.detail img{image-rendering:pixelated;height:100px}.ph{width:60px;height:100px;background:#d8c7a0;color:#7a6650;display:flex;align-items:center;justify-content:center;font-size:11px;border-radius:6px}.ph.big{width:80px;height:130px}
+  .tag{background:#5f8a63;color:#fff;border-radius:10px;padding:1px 8px;font-size:11px}
+  .bar{display:inline-block;width:110px;height:8px;background:#e1d3b5;border-radius:4px;vertical-align:middle;margin:0 6px}.bar i{display:block;height:100%;background:#c98a4b;border-radius:4px}
+  .detail{display:flex;gap:16px}.detail .left{display:flex;flex-direction:column;gap:6px;align-items:center;min-width:110px}.detail .right{flex:1}
+  .attr{display:flex;align-items:center;margin:3px 0}.attr span{width:52px}.attr em{font-style:normal;width:28px}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.say{font-size:15px}.react{background:#fff8ea;border:1px dashed #cdb894;padding:8px;border-radius:6px}
+  .street{display:flex;gap:12px;flex-wrap:wrap}.street img{width:320px;border-radius:8px}.nbs{flex:1;display:flex;flex-direction:column;gap:8px;min-width:260px}.nb{background:#fff8ea;border:1px solid #cdb894;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:2px}.love{color:#c0392b}
+  .tabs{display:flex;gap:6px}.paper{background:#fffdf3;border:1px solid #d8c7a0;border-radius:6px;padding:12px;margin-top:8px;font-family:"KaiTi","STKaiti",serif;font-size:15px;line-height:1.9;background-image:repeating-linear-gradient(transparent 0 27px,#eadfc6 27px 28px)}
+  .chk{display:block;margin:4px 0}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.ln{display:flex;justify-content:space-between;border-bottom:1px dotted #d8c7a0;padding:3px 0}.ln em{font-style:normal}.ln.tot{font-weight:bold}
+  #score{left:50%;top:10px;transform:translateX(-50%);background:rgba(25,20,15,.85);color:#ffe9b0;padding:6px 16px;border-radius:6px;font-size:18px;white-space:nowrap}
+  #mctl{display:flex;gap:8px;justify-content:center}
+  #mctl div{background:#c98a4b;color:#2a1a0a;padding:10px 14px;border-radius:8px;cursor:pointer;font-size:14px}
+  #mctl #back{background:#5f8a63;color:#fff}
+  .land #mctl{left:0;bottom:12px;width:960px}
+  .port #mctl{left:0;top:560px;width:540px;flex-wrap:wrap;padding:0 16px}
+  #mnote{display:none;left:16px;top:680px;width:508px;font-size:13px;line-height:1.7;color:#d9c9a8}
+</style>
+</head>
+<body>
+<div id="bar" style="display:none">
+  <button data-k="mode" data-v="train" class="on">训练（2×3 共6台）</button>
+  <button data-k="mode" data-v="match">办比赛（2×2 共4场）</button>
+  <span class="sep"></span>
+  <button data-k="state" data-v="start" class="on">开局（破旧）</button>
+  <button data-k="state" data-v="fixed">全部修好</button>
+  <span class="sep"></span>
+  <button data-k="orient" data-v="land" class="on">横屏 960×540</button>
+  <button data-k="orient" data-v="port">竖屏 540×960</button>
+  <span class="sep"></span>
+  <button id="gridBtn">网格/标尺</button>
+</div>
+<div id="stage">
+  <div id="frame" class="land">
+    <canvas id="c"></canvas>
+    <div id="hud" class="ov"></div>
+    <div id="nav" class="ov"></div>
+    <div id="modal" class="ov"></div>
+    <div id="score" class="ov">小学员 A　7 : 5　老球友　· 第2局</div>
+    <div id="mctl" class="ov"><div>赛前战术</div><div>局间指挥</div><div>暂停（剩1次）</div><div id="back">◀ 返回球馆</div></div>
+    <div id="mnote" class="ov">比赛特写：72 像素/米，成年人 ≈ 122px，球 4px。<br>竖屏下镜头只对准这一张台；下面这块放比分、战术和对学员说的话。</div>
+  </div>
+</div>
+<script src="js/assets.js"></script>
+<script src="js/game.js"></script>
+
+</body>
+</html>
