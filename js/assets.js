@@ -246,6 +246,42 @@ const ASSETS={
   "boxes": {
    "hall": "assets/props/boxes_hall.png",
    "close": "assets/props/boxes_close.png"
+  },
+  "teatable": {
+   "close": "assets/props/teatable_close.png",
+   "hall": "assets/props/teatable_hall.png"
+  },
+  "bamboochair": {
+   "close": "assets/props/bamboochair_close.png",
+   "hall": "assets/props/bamboochair_hall.png"
+  },
+  "woodstool": {
+   "close": "assets/props/woodstool_close.png",
+   "hall": "assets/props/woodstool_hall.png"
+  },
+  "redstool": {
+   "close": "assets/props/redstool_close.png",
+   "hall": "assets/props/redstool_hall.png"
+  },
+  "water": {
+   "close": "assets/props/water_close.png",
+   "hall": "assets/props/water_hall.png"
+  },
+  "gearrack": {
+   "close": "assets/props/gearrack_close.png",
+   "hall": "assets/props/gearrack_hall.png"
+  },
+  "door_open": {
+   "close": "assets/props/door_open_close.png",
+   "hall": "assets/props/door_open_hall.png"
+  },
+  "door_closed": {
+   "close": "assets/props/door_closed_close.png",
+   "hall": "assets/props/door_closed_hall.png"
+  },
+  "bench2": {
+   "close": "assets/props/bench2_close.png",
+   "hall": "assets/props/bench2_hall.png"
   }
  },
  "scenes": {

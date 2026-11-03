@@ -183,22 +183,19 @@ function lamps(b,list){
     ctx.fillStyle='#222';ctx.fillRect(p[0],0,1,p[1]);ctx.fillStyle='#3c3c3c';ctx.fillRect(p[0]-10*s,p[1],20*s,6*s);ctx.fillStyle=on?'#fff3c4':'#555';ctx.fillRect(p[0]-8*s,p[1]+6*s,16*s,Math.max(1,2*s));}});
 }
 function restArea(list){
-  const put=(k,x,d)=>list.push({k:d,f:()=>{const im=pimg(k);if(!im)return;const p=P(x,d,0);drawAt(im,p[0],p[1]);}});
-  // 左墙上的大门（靠近镜头）
-  list.push({k:12.9,f:()=>{faceD(0,0.35,2.25,0,2.3,'#4a3626');faceD(0,0.5,2.1,0.05,2.15,'#f3dfb0');faceD(0,0.5,2.1,0.05,0.5,'rgba(120,90,50,.35)');faceD(0,1.27,1.33,0.05,2.15,'#4a3626');}});
-  // 后排走道：沿后墙一排长凳（观众、等台的人坐）
-  [9,18,27].forEach(x=>put('bench',x,12.1));
-  // 饮水机（茶台旁边）
-  list.push({k:5.2,f:()=>{cuboid(3.6,4.1,5.0,5.4,1.25,'#e9eef2','#cfd8de','#aab4ba');cuboid(3.7,4.0,5.1,5.3,1.55,'#8fc3e6','#7ab0d6','#5d93ba');}});
-  // 休息区中间：工夫茶台 + 竹椅（占位，等出图）
-  list.push({k:8.4,f:()=>{cuboid(1.2,1.65,8.3,8.75,0.45,'#c9a45c','#a8843f','#8a6a2f');faceX(1.25,1.6,8.3,0.45,0.85,'#b8923f');}});
-  list.push({k:7.45,f:()=>{cuboid(1.6,2.9,7.1,7.8,0.42,'#7a4a2a','#5e3820','#4a2c18');cuboid(1.75,2.75,7.2,7.7,0.45,'#3a2a1e','#2e2016','#241a12');
-    cuboid(2.0,2.2,7.35,7.5,0.55,'#8a4a2a','#6e3a20','#5a2e1a');[2.35,2.5,2.62].forEach(x=>cuboid(x,x+0.08,7.4,7.48,0.5,'#f4efe2','#ddd6c4','#c8c0ae'));cuboid(1.8,1.95,7.55,7.68,0.68,'#d0d0d0','#aaa','#888');}});
-  list.push({k:6.6,f:()=>{cuboid(2.0,2.45,6.4,6.8,0.4,'#c9a45c','#a8843f','#8a6a2f');}});
-  // 最里面：收银柜台 + 冰柜（原来的位置）；买了器材架就挂在柜台后面的墙上
-  if(flag('gear'))list.push({k:12.6,f:()=>{cuboid(0.4,2.8,12.5,12.7,1.9,'#8a6a48','#6e4e2b','#5a3e22');[[0.55,1.0,'#d84a3a'],[1.1,1.55,'#2a2a2a'],[1.65,2.1,'#d84a3a'],[2.2,2.65,'#2a2a2a']].forEach(([a,b,c])=>faceX(a,b,12.5,1.0,1.7,c));faceX(0.55,2.65,12.5,0.35,0.85,'#e8c86a');}});
+  const put=(k,x,d,h)=>list.push({k:d,f:()=>{const im=pimg(k);if(!im)return;const p=P(x,d,h||0);drawAt(im,p[0],p[1]);}});
+  // 左墙上的大门：有人进门时打开
+  list.push({k:12.95,f:()=>{const open=(typeof arriveP==='function')&&arriveP(6)<1;const im=pimg(open?'door_open':'door_closed');const p=P(0.15,0.4,0);
+    if(im){smooth();ctx.drawImage(im.img||im,Math.round(p[0]-im.width*0.25),Math.round(p[1]-im.height),im.width,im.height);}}});
+  // 后排走道：沿后墙一排长凳（避开吊灯电线）
+  [6.6,15.6,24.6].forEach(x=>put('bench2',x,12.2));
+  // 最里面：收银柜台 + 冰柜；买了器材架就挂在柜台后面的墙上
+  if(flag('gear'))put('gearrack',1.5,12.8,0.9);
   sprite('hero2',1.6,11.7,false,11.7,list);
   put('counter',1.5,10.6); put('fridge',3.4,11.9);
+  // 中间：工夫茶台、竹椅、小凳、红塑料凳，旁边饮水机
+  put('bamboochair',1.15,8.6); put('teatable',2.2,7.6); put('redstool',3.5,7.9); put('woodstool',2.3,6.6);
+  put('water',4.0,5.4);
   put('basket',5.4,1.3);
   if(flag('net'))put('net',6.4,10.6); if(flag('dehum'))put('dehum',3.9,9.8);
 }
