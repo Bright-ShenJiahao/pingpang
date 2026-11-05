@@ -70,6 +70,19 @@
   .port #mctl{left:0;top:560px;width:540px;flex-wrap:wrap;padding:0 16px}
   #mnote{display:none;left:16px;top:680px;width:508px;font-size:13px;line-height:1.7;color:#d9c9a8}
   .toastline{font-style:normal;margin-left:6px;padding:4px 10px;background:#3a2e22;color:#ffe9b0;border-radius:6px;transition:opacity .4s;opacity:0;flex:1;min-width:200px}
+  #goal{left:8px;top:30px;width:200px;background:rgba(40,26,14,.82);border:1px solid #8c6438;border-radius:6px;color:#f3e2c4;font-size:12px;line-height:1.55;padding:5px 8px;cursor:pointer}#goal small{color:#cdb894;font-size:11px;display:block}#goal div small{display:inline}#goal b{color:#ffe08a}
+  #match{display:none;left:0;top:0;right:0;bottom:0;pointer-events:none;font-size:13px;color:#f3e2c4}
+  #match>div{position:absolute;pointer-events:auto;background:rgba(40,26,14,.92);border:2px solid #8c6438;border-radius:8px;padding:6px 10px;box-sizing:border-box}
+  #mScore{left:50%;top:6px;transform:translateX(-50%);font-size:17px;white-space:nowrap;text-align:center}#mScore small{font-size:12px;color:#cdb894}#mScore b{color:#ffe08a}
+  #mMor{left:50%;top:46px;transform:translateX(-50%);display:flex;align-items:center;font-size:12px;white-space:nowrap;padding:3px 10px!important}
+  #mLog{line-height:1.5;font-size:12px;overflow:hidden}#mLog b{color:#ffe08a;display:block}#mLog div:nth-child(n+3){opacity:.8}
+  .land #mLog{left:10px;bottom:8px;width:330px;height:100px;font-size:11px}.port #mLog{left:10px;top:590px;width:520px;height:140px}
+  .land #mCards{right:10px;bottom:8px;width:420px}.port #mCards{left:10px;top:740px;width:520px}
+  #mCards .mnote2{font-size:12px;color:#ffe9b0;min-height:32px}
+  #match button{background:#c98a4b;color:#2a1a0a;border:0;border-radius:8px;padding:7px 10px;font-size:13px;cursor:pointer}#match button[disabled]{opacity:.45}#match button.go{background:#5f8a63;color:#fff}
+  #match button.mc{display:flex;flex-direction:column;align-items:flex-start;flex:1;padding:5px 8px;background:#e9d5ad;color:#3a2616}#match button.mc small{font-size:10px;color:#6a5844}
+  #mOver{left:50%;top:50%;transform:translate(-50%,-50%);width:380px;background:#f6eedd!important;color:#3a2e22!important;border-color:#8c6438}#mOver h3{margin:0 0 8px}
+  #match .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
   .slot.past{opacity:.5}.wk td{cursor:pointer}
 </style>
 </head>
@@ -91,17 +104,20 @@
     <canvas id="c"></canvas>
     <div id="hud" class="ov"></div>
     <div id="nav" class="ov"></div>
+    <div id="goal" class="ov"></div>
     <div id="toast" class="ov"></div>
     <div id="side" class="ov"></div>
     <div id="modal" class="ov"></div>
     <div id="score" class="ov">小学员 A　7 : 5　老球友　· 第2局</div>
     <div id="mctl" class="ov"><div>赛前战术</div><div>局间指挥</div><div>暂停（剩1次）</div><div id="back">◀ 返回球馆</div></div>
+    <div id="match" class="ov"></div>
     <div id="mnote" class="ov">比赛特写：72 像素/米，成年人 ≈ 122px，球 4px。<br>竖屏下镜头只对准这一张台；下面这块放比分、战术和对学员说的话。</div>
   </div>
 </div>
 <script src="js/assets.js"></script>
 <script src="js/game.js"></script>
 <script src="js/sim.js"></script>
+<script src="js/match.js"></script>
 <script src="js/guide.js"></script>
 
 </body>

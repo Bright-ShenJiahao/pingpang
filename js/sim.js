@@ -54,16 +54,16 @@ function newGame(){
     flags:{},queue:[],love:{tang:1,shi:1,old:2},visit:'tang',talked:{},
     sched:Array.from({length:7},()=>['开课','带训练','休息']),boost:0,cards:{time:0,work:0},
     students:[
-      {id:'A',name:'小学员 A',spr:'kid_r_close',actor:'kid',hand:'右手横拍',style:'弧圈快攻',trait:'怕输',talent:1.0,stat:{发球:6,接发球:5,正手:8,反手:6,步法:7,体力:9,心态:4,勤奋:8},hp:90,mood:60,bond:30,train:'对练',tbl:1,joined:true,story:'第一次来球馆时躲在门后看了半小时。'},
-      {id:'B',name:'小学员 B',spr:null,blk:['#3e66a8','#2b3550','#2a1d14',true],hand:'右手横拍',style:'快攻',trait:'天赋高但懒',talent:1.4,stat:{发球:9,接发球:8,正手:9,反手:8,步法:5,体力:5,心态:7,勤奋:3},hp:80,mood:70,bond:10,train:'发球接发球',tbl:1,joined:true,story:'（待写）'},
-      {id:'C',name:'小学员 C',spr:null,blk:['#c45a3a','#3a3a3a','#2a1d14',true],hand:'右手直拍',style:'直拍快攻',trait:'老实',talent:0.9,stat:{发球:5,接发球:6,正手:7,反手:4,步法:6,体力:8,心态:6,勤奋:9},hp:90,mood:65,bond:20,train:'体能',tbl:0,joined:true,story:'（待写）'},
-      {id:'D',name:'小女孩',spr:'girl0_close',actor:'girl',hand:'右手横拍',style:'新手',trait:'爱笑',talent:1.2,stat:{发球:2,接发球:2,正手:3,反手:2,步法:3,体力:5,心态:8,勤奋:6},hp:90,mood:85,bond:15,train:'对练',tbl:2,joined:true,story:'看了电视上的比赛，非要妈妈带她来学打球。'}],
+      {id:'A',name:'小学员 A',spr:'kid_r_close',actor:'kid',hand:'右手横拍',style:'弧圈快攻',trait:'怕输',talent:1.0,stat:{发球:6,接发球:5,正手:8,反手:6,步法:7,体力:9,心态:4,勤奋:8},path:'横拍弧圈',xp:0,lv:0,sp:0,skills:[],hp:90,mood:60,bond:30,train:'对练',tbl:1,joined:true,story:'第一次来球馆时躲在门后看了半小时。'},
+      {id:'B',name:'小学员 B',spr:null,blk:['#3e66a8','#2b3550','#2a1d14',true],hand:'右手横拍',style:'快攻',trait:'天赋高但懒',talent:1.4,stat:{发球:9,接发球:8,正手:9,反手:8,步法:5,体力:5,心态:7,勤奋:3},path:'横拍弧圈',xp:0,lv:0,sp:0,skills:[],hp:80,mood:70,bond:10,train:'发球接发球',tbl:1,joined:true,story:'（待写）'},
+      {id:'C',name:'小学员 C',spr:null,blk:['#c45a3a','#3a3a3a','#2a1d14',true],hand:'右手直拍',style:'直拍快攻',trait:'老实',talent:0.9,stat:{发球:5,接发球:6,正手:7,反手:4,步法:6,体力:8,心态:6,勤奋:9},path:'直拍快攻',xp:0,lv:0,sp:0,skills:[],hp:90,mood:65,bond:20,train:'体能',tbl:0,joined:true,story:'（待写）'},
+      {id:'D',name:'小女孩',spr:'girl0_close',actor:'girl',hand:'右手横拍',style:'新手',trait:'爱笑',talent:1.2,stat:{发球:2,接发球:2,正手:3,反手:2,步法:3,体力:5,心态:8,勤奋:6},path:null,xp:0,lv:0,sp:0,skills:[],hp:90,mood:85,bond:15,train:'对练',tbl:2,joined:true,story:'看了电视上的比赛，非要妈妈带她来学打球。'}],
     msgs:['老球友：「你爷爷当年的球拍还在柜台抽屉里。」','市乒协：第 4 周周六举办市赛少儿组，周四截止报名。'],
-    wishDone:[],cust:{},wk:freshWeek(),lastTip:''};
+    wishDone:[],cust:{},wk:freshWeek(),lastTip:'',quizDone:false,coach:{xp:0,lv:1},played:0,matchDay:0};
 }
 function freshWeek(){return {inc:{课程:0,散客:0,饮料:0,器材:0,奖励:0},out:{设施:0,水电房租:0},gain:{},rep0:null};}
 let G=load()||newGame();
-(function migrate(){G.queue=(G.queue||[]).map(q=>typeof q==='string'?{id:q,left:(FAC.find(f=>f.id===q)||{hrs:4}).hrs}:q);G.sched.forEach(d=>d.forEach((a,i)=>{if(a==='修理')d[i]='亲自动手';}));G.boost=G.boost||0;G.cards=G.cards||{time:0,work:0};})();
+(function migrate(){G.queue=(G.queue||[]).map(q=>typeof q==='string'?{id:q,left:(FAC.find(f=>f.id===q)||{hrs:4}).hrs}:q);G.sched.forEach(d=>d.forEach((a,i)=>{if(a==='修理')d[i]='亲自动手';}));G.boost=G.boost||0;if(G.quizDone===undefined)G.quizDone=true;G.coach=G.coach||{xp:0,lv:1};G.played=G.played||0;G.matchDay=G.matchDay||0;G.students.forEach(s=>{s.xp=s.xp||0;s.lv=s.lv||0;s.sp=s.sp||0;s.skills=s.skills||[];if(s.path===undefined)s.path={A:'横拍弧圈',B:'横拍弧圈',C:'直拍快攻'}[s.id]||null;});G.cards=G.cards||{time:0,work:0};})();
 let ARRIVE_T0=performance.now();
 function arriveP(id){if(S.view!=='hall')return 1;return clamp((performance.now()-ARRIVE_T0-(id-1)*350)/2600,0,1);}
 function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(G));}catch(e){}}
@@ -78,6 +78,7 @@ function boxOf(id){return boxes.find(b=>b.id===id);}
 function trainOK(s,p){const t=TRAIN[p];if(t.need==='net'&&!G.flags.net)return false;if(t.need==='chop'&&G.love.old<3)return false;return true;}
 // 球台上是谁：学员优先，其次散客
 function tableActors(b){
+  if(MATCH&&MATCH.on&&S.view==='close')return matchActors();
   if(S.mode!=='train'&&S.view==='hall')return [{blk:PEOPLE[0]},{blk:PEOPLE[1]}];
   const here=G.students.filter(s=>atHall(s)&&s.tbl===b.id&&TRAIN[s.train].table&&s.train!=='休息');
   const act=s=>s.actor?s.actor:{blk:s.blk};
@@ -111,6 +112,7 @@ const modalOpen=()=>$('modal')&&$('modal').style.display==='block';
 const speed=()=>G.boost>0?2:1;
 function clockStr(){const h=SLOT_START[G.slot]+clockT/SLOT_SEC*4;const hh=Math.floor(h),mm=Math.floor((h-hh)*6)*10;return `${hh}:${String(mm).padStart(2,'0')}`;}
 function update(dt){
+  if(MATCH&&MATCH.on){matchUpdate(dt);return;}
   if(PAUSED||modalOpen()||location.hash.startsWith('#guide'))return;
   clockT+=Math.min(dt,0.25)*speed();
   while(tickIdx<TICKS&&clockT>=(tickIdx+1)*SLOT_SEC/TICKS){tick();tickIdx++;}
@@ -144,7 +146,7 @@ function tick(){
     if(coach)m*=1.4;
     if(s.hp<25)m*=0.5; if(s.mood<30)m*=0.7;
     if(wet)m*=0.7; if(G.flags.paint)m*=1.1; if(G.tables[s.tbl]==='blue'&&T.table)m*=1.1;
-    const ups=[];
+    const ups=[];addXp(s,m*f*2.2);
     for(const [k,w] of Object.entries(T.gain)){const before=Math.floor(s.stat[k]);s.stat[k]=Math.min(20,s.stat[k]+w*m*f*(0.8+Math.random()*0.4));
       const d=Math.floor(s.stat[k])-before;if(d>0){ups.push(k+' +'+d);G.wk.gain[s.name]=G.wk.gain[s.name]||{};G.wk.gain[s.name][k]=(G.wk.gain[s.name][k]||0)+d;}}
     s.hp=clamp(s.hp+T.hp*f,0,100);s.mood=clamp(s.mood-2*f,0,100);
@@ -200,6 +202,7 @@ let toastT=null;
 function toast(t){const el=$('toast');if(!el)return;el.textContent=t;el.style.opacity=1;clearTimeout(toastT);toastT=setTimeout(()=>el.style.opacity=0,4500);}
 function hud(){
   $('hud').innerHTML=`<span>第${G.week}周 · ${DAYS[G.day]} · ${SLOTS[G.slot]}</span><span>${money(G.money)}</span><span>人气 ${'★'.repeat(stars())}${'☆'.repeat(5-stars())}</span><span>${G.weather}</span><span class="nbk" onclick="openUI('notebook')">笔记本${G.msgs.length?'<b>●</b>':''}</span><span class="gear" onclick="openUI('system')">设置</span>`;
+  if(typeof goal==='function')goal();
 }
 function bar(v,max=20){return `<span class="bar"><i style="width:${clamp(v/max,0,1)*100}%"></i></span>`;}
 function nav(){
@@ -230,6 +233,7 @@ const UI={
   const s=G.students[i],grp={技术:['发球','接发球','正手','反手'],身体:['步法','体力'],心理:['心态','勤奋']};
   modal(s.name,`<div class="detail"><div class="left">${s.spr?`<img src="${SPR[s.spr].src}">`:'<div class="ph big">待出图</div>'}<span class="tag">${s.trait}</span><small>${s.hand}<br>${s.style}</small></div>
   <div class="right">${Object.entries(grp).map(([g,ks])=>`<h4>${g}</h4>${ks.map(k=>`<div class="attr"><span>${k}</span>${bar(s.stat[k])}<em>${Math.floor(s.stat[k])}</em></div>`).join('')}`).join('')}
+  ${pathHTML(i)}
   <h4>状态</h4><div class="attr"><span>体力</span>${bar(s.hp,100)}<em>${Math.round(s.hp)}</em></div><div class="attr"><span>心情</span>${bar(s.mood,100)}<em>${Math.round(s.mood)}</em></div><div class="attr"><span>关系</span>${bar(s.bond,100)}<em>${s.bond}</em></div>
   <h4>小故事</h4><p>${s.story}</p></div></div>
   <div class="row"><button onclick="UI.students()">◀ 名册</button><button ${G.talked[s.id]?'disabled':''} onclick="UI.talk(${i})">谈话${G.talked[s.id]?'（今天聊过了）':''}</button><button onclick="UI.training()">安排训练</button></div>`);
@@ -252,7 +256,7 @@ const UI={
  },
  fixtures(){
   modal('赛程与报名',`<table class="tr"><tr><th>时间</th><th>比赛</th><th>状态</th></tr><tr><td>第2周 周六</td><td>街坊友谊赛（球馆内）</td><td>需 3 张台可用</td></tr><tr><td>第4周 周六</td><td><b>市赛 · 少儿组</b><br><small>小组赛 1 场 + 淘汰赛 2～3 场</small></td><td>周四截止报名</td></tr></table>
-  <p class="hint">比赛系统还在设计中，现在先看比赛特写。</p>`);
+  <div class="row"><button class="go" onclick="UI.matchSetup()">来一场练习赛</button></div><p class="hint">练习赛每天一场：赢了涨人气、拿奖金，学员和教练都能拿经验。</p>`);
  },
  notebook(tab='wish'){
   const T={wish:'心愿',msg:'消息',tip:'训练心得'};
@@ -302,5 +306,5 @@ function hitAll(mx,my){
   return null;
 }
 
-layout();hud();startSlot();fit();
+layout();hud();startSlot();fit();if(!G.quizDone)setTimeout(()=>UI.quiz(0),300);
 if(!location.hash.startsWith('#guide'))requestAnimationFrame(loop);

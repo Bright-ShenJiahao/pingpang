@@ -1,3 +1,4 @@
+var MATCH=null;
 // 「乒乓」原型 · 主程序
 if(new URLSearchParams(location.search).has('debug')){document.body.classList.add('debug');document.getElementById('bar').style.display='flex';}
 
@@ -244,7 +245,7 @@ function drawClose(t){
   list.push({k:b.d0,f:()=>faceX(b.x0,b.x1,b.d0,0,0.03,C.barS())});
   table(b,list);players(b,t,list,2.4);lamps(b,list);
   list.push({k:6.0,f:()=>{cuboid(9.2,10.2,6.0,6.4,0.75,'#7a5530','#5e4024','#4a321c');cuboid(9.4,10.0,6.1,6.25,1.0,'#f2f2f2','#e8e8e8','#bbb');
-    const p=P(9.42,6.1,0.98);ctx.fillStyle='#222';ctx.font='bold 13px monospace';ctx.textBaseline='top';ctx.fillText('7  5',p[0]+3,p[1]+2);}});
+    const p=P(9.42,6.1,0.98);ctx.fillStyle='#222';ctx.font='bold 13px monospace';ctx.textBaseline='top';ctx.fillText((typeof MATCH!=='undefined'&&MATCH&&MATCH.on)?MATCH.pts[0]+'  '+MATCH.pts[1]:'0  0',p[0]+3,p[1]+2);}});
   list.sort((a,c)=>c.k-a.k).forEach(o=>o.f());
   if(S.grid){const y=0;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(0,y,VW,14);ctx.font='10px sans-serif';
     for(let m=-4;m<=16;m++){const x=Math.round(m*PX-cam);if(x<-20||x>VW+20)continue;ctx.fillStyle='#ffe9b0';ctx.fillRect(x,y,1,8);ctx.fillText(m+'m',x+2,y+2);}
@@ -266,7 +267,8 @@ function fit(){
   fr.className=port?'port':'land';fr.style.width=VW+'px';fr.style.height=VH+'px';
   const hall=S.view==='hall';
   document.getElementById('nav').style.display=hall?'flex':'none';document.getElementById('side').style.display=hall&&port?'block':'none';document.getElementById('hud').style.display=hall?'flex':'none';if(!hall)closeUI();
-  ['score','mctl'].forEach(id=>document.getElementById(id).style.display=hall?'none':'flex');
+  ['score','mctl'].forEach(id=>document.getElementById(id).style.display=hall||(typeof MATCH!=='undefined'&&MATCH&&MATCH.on)?'none':'flex');
+  document.getElementById('goal').style.display=hall?'block':'none';if(typeof matchRender==='function')matchRender();
   document.getElementById('mnote').style.display=!hall&&port?'block':'none';
   const st=document.getElementById('stage');
   scale=Math.min(st.clientWidth/VW,st.clientHeight/VH);
@@ -292,6 +294,6 @@ cv.addEventListener('pointerup',e=>{
   drag=null;});
 cv.addEventListener('wheel',e=>{if(S.view==='hall'){cam+=(e.deltaX||e.deltaY);clampCam();}e.preventDefault();},{passive:false});
 addEventListener('resize',fit);
-addEventListener('keydown',e=>{if(e.key==='Escape'){if(S.view!=='hall'){S.view='hall';cam=HOMECAM;fit();}else closeUI();}});
+addEventListener('keydown',e=>{if(e.key==='Escape'){if(typeof MATCH!=='undefined'&&MATCH&&MATCH.on)return;if(S.view!=='hall'){S.view='hall';cam=HOMECAM;fit();}else closeUI();}});
 
 
