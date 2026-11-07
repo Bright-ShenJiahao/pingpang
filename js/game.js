@@ -145,7 +145,9 @@ function players(b,t,list,span){
   const pair=(typeof tableActors==='function')?tableActors(b):null; if(!pair)return;
   const [L,R]=pair, cx=(b.x0+b.x1)/2, cd=(b.d0+b.d1)/2;
   const slow=L==='girl'||R==='mom', chop=R==='of';
-  const per=slow?1.8:1.1, ph=t/per+b.id*0.37, k=Math.floor(ph), u=ph-k, dirR=k%2===0;
+  const per=slow?1.8:1.1, ph=t/per+b.id*0.37; let k=Math.floor(ph), u=ph-k, dirR=k%2===0;
+  const IM_=(typeof MATCH!=='undefined'&&MATCH&&MATCH.on),MA=IM_?(MATCH.anim||{u:.97,dirR:true,ball:null,k:0}):null;
+  if(MA){u=MA.u;dirR=MA.dirR;k=MA.k;}
   let xa=cx-(slow?2.05:span), xb=cx+(chop?span+1.2:slow?1.8:span);
   // 进门动画：时段开始时从左墙大门走到球台
   const ap=(typeof arriveP==='function')?arriveP(b.id):1;
@@ -167,6 +169,10 @@ function players(b,t,list,span){
   else if(R==='mom'){sprite(!dirR&&u<0.25?'mom1':'mom0',xb,cd+0.05,false,cd-0.002,list);}
   else{const c=R.blk,sw=!dirR?Math.max(0,1-u*4):Math.max(0,(u-0.7)*3);person(xb,cd+0.05,c[3]?1.40:1.70,c[0],c[1],c[2],-1,sw,cd-0.002,list,c[3]);}
   // 球
+  if(MA){
+    if(MA.ball){const B=MA.ball,bx=dirR?cx-1.37+B.X:cx+1.37-B.X,bd=cd+(dirR?B.z:-B.z),bh=0.76+B.y,bs0=Math.max(2,Math.round(PX*0.055));
+      list.push({k:cd-0.003,f:()=>{const q=P(bx,bd,0.76),p=P(bx,bd,bh);ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(q[0]-1,q[1]-1,bs0,2);ctx.fillStyle='#fff';ctx.fillRect(p[0]-1,p[1]-1,bs0,bs0);}});}
+    return;}
   const fromX=dirR?xa+0.4:xb-0.45, toX=dirR?xb-0.45:xa+0.4, x=fromX+(toX-fromX)*u; let h;
   if(slow){const bt=0.62;if(u<bt){const v=u/bt;h=0.9+(0.76-0.9)*v+0.7*4*v*(1-v);}else{const v=(u-bt)/(1-bt);h=0.76+(0.9-0.76)*v+0.55*4*v*(1-v);}}
   else if(chop){const bt=dirR?0.6:0.7,peak=dirR?0.35:0.18,h0=dirR?0.95:0.7,h1=dirR?0.75:0.95;if(u<bt){const v=u/bt;h=h0+(0.76-h0)*v+peak*4*v*(1-v);}else{const v=(u-bt)/(1-bt);h=0.76+(h1-0.76)*v+0.2*4*v*(1-v);}}
